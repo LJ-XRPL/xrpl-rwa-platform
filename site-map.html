@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Site Map | XRPL RWA Platform</title>
+    <style>
+        :root {
+            --ripple-blue: #0085FF;
+            --ripple-cyan: #00B7FF;
+            --ripple-dark: #1A1A2E;
+            --ripple-darker: #0F0F1A;
+            --glass-bg: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --text-primary: #FFFFFF;
+            --text-secondary: rgba(255, 255, 255, 0.7);
+            --text-muted: rgba(255, 255, 255, 0.5);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--ripple-darker);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        /* Navigation */
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            background: rgba(26, 26, 46, 0.8);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--glass-border);
+            padding: 1rem 2rem;
+        }
+
+        .nav-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-weight: 700;
+            font-size: 1.25rem;
+            color: var(--text-primary);
+            text-decoration: none;
+        }
+
+        .logo-icon {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, var(--ripple-blue), var(--ripple-cyan));
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 1rem;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s;
+            font-size: 0.95rem;
+        }
+
+        .nav-links a:hover,
+        .nav-links a.active {
+            color: var(--ripple-cyan);
+        }
+
+        /* Main Content */
+        main {
+            padding-top: 100px;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding-left: 2rem;
+            padding-right: 2rem;
+            padding-bottom: 4rem;
+        }
+
+        .page-header {
+            text-align: center;
+            margin-bottom: 4rem;
+        }
+
+        .page-title {
+            font-size: 3rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, var(--ripple-blue), var(--ripple-cyan));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .page-subtitle {
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        /* Section */
+        .section {
+            margin-bottom: 3rem;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .section-icon {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, var(--ripple-blue), var(--ripple-cyan));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .section-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        /* Card Grid */
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .page-card {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 1.5rem;
+            transition: transform 0.2s, border-color 0.2s;
+            text-decoration: none;
+            display: block;
+        }
+
+        .page-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--ripple-blue);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 0.75rem;
+        }
+
+        .card-title {
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: var(--text-primary);
+        }
+
+        /* Badges */
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            flex-shrink: 0;
+        }
+
+        .badge-blue {
+            background: rgba(0, 133, 255, 0.2);
+            color: var(--ripple-blue);
+            border: 1px solid rgba(0, 133, 255, 0.3);
+        }
+
+        .badge-cyan {
+            background: rgba(0, 183, 255, 0.2);
+            color: var(--ripple-cyan);
+            border: 1px solid rgba(0, 183, 255, 0.3);
+        }
+
+        .badge-green {
+            background: rgba(0, 255, 136, 0.2);
+            color: #00FF88;
+            border: 1px solid rgba(0, 255, 136, 0.3);
+        }
+
+        .badge-purple {
+            background: rgba(147, 112, 219, 0.2);
+            color: #9370DB;
+            border: 1px solid rgba(147, 112, 219, 0.3);
+        }
+
+        .badge-orange {
+            background: rgba(255, 165, 0, 0.2);
+            color: #FFA500;
+            border: 1px solid rgba(255, 165, 0, 0.3);
+        }
+
+        .badge-pink {
+            background: rgba(255, 105, 180, 0.2);
+            color: #FF69B4;
+            border: 1px solid rgba(255, 105, 180, 0.3);
+        }
+
+        .badge-yellow {
+            background: rgba(255, 215, 0, 0.2);
+            color: #FFD700;
+            border: 1px solid rgba(255, 215, 0, 0.3);
+        }
+
+        .badge-dark {
+            background: rgba(100, 100, 120, 0.3);
+            color: #A0A0B0;
+            border: 1px solid rgba(100, 100, 120, 0.4);
+        }
+
+        .card-description {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .card-meta {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+            flex-wrap: wrap;
+        }
+
+        /* Asset Type Tags */
+        .asset-tag {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        /* Stats Section */
+        .platform-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .stat-card {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--ripple-cyan);
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        /* Quick Links */
+        .quick-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .quick-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.25rem;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 8px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+
+        .quick-link:hover {
+            border-color: var(--ripple-blue);
+            color: var(--ripple-cyan);
+        }
+
+        .quick-link-icon {
+            font-size: 1.1rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .page-title {
+                font-size: 2rem;
+            }
+            
+            .nav-links {
+                display: none;
+            }
+            
+            .card-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            main {
+                padding-left: 1rem;
+                padding-right: 1rem;
+            }
+
+            .section-title {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="nav-container">
+            <a href="index.html" class="logo">
+                <div class="logo-icon">XR</div>
+                <span>XRPL RWA</span>
+            </a>
+            <ul class="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="analytics.html">Analytics</a></li>
+                <li><a href="compare.html">Compare</a></li>
+                <li><a href="site-map.html" class="active">Partners</a></li>
+                <li><a href="about.html">About</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main>
+        <div class="page-header">
+            <h1 class="page-title">Platform Navigation</h1>
+            <p class="page-subtitle">Complete directory of all pages and partner platforms on the XRPL RWA Investor Relations Platform</p>
+        </div>
+
+        <!-- Quick Links -->
+        <div class="quick-links">
+            <a href="index.html" class="quick-link">
+                <span class="quick-link-icon">🏠</span> Main Landing
+            </a>
+            <a href="analytics.html" class="quick-link">
+                <span class="quick-link-icon">📊</span> Analytics Dashboard
+            </a>
+            <a href="compare.html" class="quick-link">
+                <span class="quick-link-icon">⚖️</span> Compare Tools
+            </a>
+            <a href="about.html" class="quick-link">
+                <span class="quick-link-icon">ℹ️</span> About XRPL
+            </a>
+            <a href="methodology.html" class="quick-link">
+                <span class="quick-link-icon">📋</span> Methodology
+            </a>
+        </div>
+
+        <!-- Platform Stats -->
+        <div class="platform-stats">
+            <div class="stat-card">
+                <div class="stat-value">17</div>
+                <div class="stat-label">Total Pages</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">13</div>
+                <div class="stat-label">Partner Platforms</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">8</div>
+                <div class="stat-label">Asset Classes</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">5</div>
+                <div class="stat-label">Core Pages</div>
+            </div>
+        </div>
+
+        <!-- Core Pages -->
+        <section class="section">
+            <div class="section-header">
+                <div class="section-icon">🧭</div>
+                <h2 class="section-title">Core Platform Pages</h2>
+            </div>
+            
+            <div class="card-grid">
+                <a href="index.html" class="page-card">
+                    <div class="card-header">
+                        <span class="card-title">Main Landing Page</span>
+                        <span class="badge badge-blue">Home</span>
+                    </div>
+                    <p class="card-description">Primary entry point featuring partner platform cards, market overview, and quick access to all tokenized RWA offerings on XRPL.</p>
+                </a>
+
+                <a href="analytics.html" class="page-card">
+                    <div class="card-header">
+                        <span class="card-title">Analytics Dashboard</span>
+                        <span class="badge badge-cyan">Data</span>
+                    </div>
+                    <p class="card-description">Interactive data visualizations showing market trends, TVL, trading volumes, and comprehensive metrics across all XRPL RWA platforms.</p>
+                </a>
+
+                <a href="compare.html" class="page-card">
+                    <div class="card-header">
+                        <span class="card-title">Partner Comparison Tool</span>
+                        <span class="badge badge-green">Tools</span>
+                    </div>
+                    <p class="card-description">Side-by-side comparison of partner platforms with customizable filters for asset class, risk level, minimum investment, and jurisdiction.</p>
+                </a>
+
+                <a href="about.html" class="page-card">
+                    <div class="card-header">
+                        <span class="card-title">About XRPL Tokenization</span>
+                        <span class="badge badge-purple">Info</span>
+                    </div>
+                    <p class="card-description">Comprehensive guide to the XRP Ledger's technical infrastructure, key features for RWA tokenization, regulatory landscape, and ecosystem milestones.</p>
+                </a>
+
+                <a href="methodology.html" class="page-card">
+                    <div class="card-header">
+                        <span class="card-title">Scoring Methodology</span>
+                        <span class="badge badge-orange">Info</span>
+                    </div>
+                    <p class="card-description">Detailed explanation of how platforms are evaluated, including permissioning frameworks, risk scoring, investor suitability criteria, and data sources.</p>
+                </a>
+            </div>
+        </section>
+
+        <!-- Partner Pages - Real Estate -->
+        <section class="section">
+            <div class="section-header">
+                <div class="section-icon">🏢</div>
+                <h2 class="section-title">Real Estate Platforms</h2>
+            </div>
+            
+            <div class="card-grid">
+                <a href="partners/ctrl-alt-property.html" class="page-card">
+                    <div class="card-header">
+                        <span class="card-title">Ctrl Alt Property</span>
+                        <span class="badge badge-orange">Real Estate</span>
+                    </div>
+                    <p class="card-description">Fractional ownership platform for commercial and residential real estate assets, enabling investors to own shares in premium properties.</p>
+                    <div class="card-meta">
+                        <span class="asset-tag">📍 Global</span>
+                        <span class="asset-tag">🏢 Commercial</span>
+                    </div>
+                </a>
+            </div>
+        </section>
+
+        <!-- Partner Pages - Commodities -->
+        <section class="section">
+            <div class="section-header">
+                <div class="section-icon">💎</div>
+                <h2 class="section-title">Commodities & Luxury Assets</h2>
+            </div>
+            
+            <div class="card-grid">
+                <a href="partners/ctrl-alt-diamonds.html" class="page-card">
+                    <div class="card-header">
+                        <span class="card-title">Ctrl Alt Diamonds</span>
+                        <span class="badge badge-pink">Commodities</span>
+                    </div>
+                    <p class="card-description">Tokenized diamond and precious gemstone investment platform providing fractional ownership of high-value diamonds with certified grading.</p>
+                    <div class="card-meta">
+                        <span class="asset-tag">💎 Gems</span>
+                        <span class="asset-tag">📍 Global</span>
+                    </div>
+                </a>
+            </div>
+        </section>
+
+        <!-- Partner Pages - Defi / Yield -->
+        <section class="section">
+            <div class="section-header">
+                <div class="section-icon">📈</div>
+                <h2 class="section-title">DeFi & Yield Platforms</h2>
+            </div>
+            
+            <div class="card-grid">
+                <a href="partners/justoken.html" class="page-card">
+                    <div class="card-header">
+                        <span class="card-title">JuS Token</span>
+                        <span class="badge badge-cyan">DeFi</span>
+                    </div>
+                    <p class="card-description">Yield optimization protocol built on XRPL providing structured products and automated yield strategies for RWA assets.</p>
+                    <div class="card-meta">
+                        <span class="asset-tag">⚡ Yield</span>
+                        <span class="asset-tag">🌐 DeFi</span>
+                    </div>
+                </a>
+
+                <a href="partners/zeconomy-guggenheim.html" class="page-card">
+                    <div class="card-header">
+                        <span class="card-title">zConomy (Guggenheim)</span>
+                        <span class="badge badge-blue">Institutional</span>
+                    </div>
+                    <p class="card-description">Strategic partnership bringing Guggenheim Partners' institutional investment expertise to XRPL-based tokenized assets.</p>
+                    <div class="card-meta">
+                        <span class="asset-tag">🏛️ Institutional</span>
+                        <span class="asset-tag">📊 Fund</span>
+                    </div>
+                </a>
+            </div>
+        </section>
+
+        <!-- Partner Pages - Stablecoin / Fiat -->
+        <section class="section">
+            <div class="section-header">
+                <div class="section-icon">💵</div>
+                <h2 class="section-title">Stablecoin & Fiat Platforms</h2>
+            </div>
+            
+            <div class="card-grid">
+                <a href="partners/ondo-finance.html" class="page-card">
+                    <div class="card-header">
+                        <span class="card-title">Ondo Finance</span>
+                        <span class="badge badge-green">Stablecoin</span>
+                    </div>
+                    <p class="card-description">Institutional-grade stablecoin and RWA platform providing USD-backed tokens with regulated custody and transparent reserve attestations.</p>
+                    <div class="card-meta">
+                        <span class="asset-tag">💵 USD</span>
+                        <span class="asset-tag">📋 Regulated</span>
+                    </div>
+                </a>
+            </div>
+        </section>
+
+        <!-- Partner Pages - Custody & Infrastructure -->
+        <section class="section">
+            <div class="section-header">
+                <div class="section-icon">🔐</div>
+                <h2 class="section-title">Custody & Infrastructure</h2>
+            </div>
+            
+            <div class="card-grid">
+                <a href="partners/archax.html" class="page-card">
+                    <div class="card-header">
+                        <span class="card-title">Archax</span>
+                        <span class="badge badge-purple">Custody</span>
+                    </div>
+                    <p class="card-description">UK-based digital asset custodian and exchange providing institutional-grade storage, trading, and tokenization services for RWAs.</p>
+                    <div class="card-meta">
+                        <span class="asset-tag">🇬🇧 UK</span>
+                        <span class="asset-tag">🔒 Custody</span>
+                    </div>
+                </a>
+
+                <a href="partners/openeden.html" class="page-card">
+                    <div class="card-header">
+                        <span class="card-title">Open Eden</span>
+                        <span class="badge badge-purple">Custody</span>
+                    </div>
+                    <p class="card-description">Institutional Bitcoin treasury platform offering secure custody and strategic BTC allocation solutions for corporate treasuries.</p>
+                    <div class="card-meta">
+                        <span class="asset-tag">₿ Bitcoin</span>
+                        <span class="asset-tag">🏢 Treasury</span>
+                    </div>
+                </a>
+            </div>
+        </section>
+
+        <!-- Partner Pages - Traditional Finance -->
+        <section class="section">
+            <div class="section-header">
+                <div class="section-icon">🏦</div>
+                <h2 class="section-title">Traditional Finance Partners</h2>
+            </div>
+            
+            <div class="card-grid">
+                <a href="partners/phillip-securities.html" class="page-card">
+                    <div class="card-header">
+                        <span class="card-title">Phillip Securities</span>
+                        <span class="badge badge-dark">Brokerage</span>
+                    </div>
+                    <p class="card-description">Singapore-based brokerage bringing traditional securities expertise to digital asset tokenization with MAS licensing.</p>
+                    <div class="card-meta">
+                        <span class="asset-tag">🇸🇬 Singapore</span>
+                        <span class="asset-tag">📜 Licensed</span>
+                    </div>
+                </a>
+
+                <a href="partners/marketnode.html" class="page-card">
+                    <div class="card-header">
+                        <span class="card-title">MarketNode</span>
+                        <span class="badge badge-dark">Infrastructure</span>
+                    </div>
+                    <p class="card-description">Singapore digital asset infrastructure platform enabling institutional-grade tokenization, trading, and settlement services.</p>
+                    <div class="card-meta">
+                        <span class="asset-tag">🇸🇬 Singapore</span>
+                        <span class="asset-tag">🏛️ Infrastructure</span>
+                    </div>
+                </a>
+            </div>
+        </section>
+
+        <!-- Partner Pages - Alternative Assets -->
+        <section class="section">
+            <div class="section-header">
+                <div class="section-icon">🎨</div>
+                <h2 class="section-title">Alternative Assets</h2>
+            </div>
+            
+            <div class="card-grid">
+                <a href="partners/assnture.html" class="page-card">
+                    <div class="card-header">
+                        <span class="card-title">Assnture</span>
+                        <span class="badge badge-yellow">Insurance</span>
+                    </div>
+                    <p class="card-description">Tokenized insurance-linked securities platform providing access to insurance contracts as investment assets with structured returns.</p>
+                    <div class="card-meta">
+                        <span class="asset-tag">🛡️ Insurance</span>
+                        <span class="asset-tag">📊 Securities</span>
+                    </div>
+                </a>
+
+                <a href="partners/vert-capital.html" class="page-card">
+                    <div class="card-header">
+                        <span class="card-title">Vert Capital</span>
+                        <span class="badge badge-orange">Private Credit</span>
+                    </div>
+                    <p class="card-description">Private credit investment platform tokenizing institutional lending portfolios for accredited and institutional investors.</p>
+                    <div class="card-meta">
+                        <span class="asset-tag">💳 Credit</span>
+                        <span class="asset-tag">🏦 Private</span>
+                    </div>
+                </a>
+            </div>
+        </section>
+
+        <!-- Partner Pages - APAC -->
+        <section class="section">
+            <div class="section-header">
+                <div class="section-icon">🌏</div>
+                <h2 class="section-title">Asia-Pacific Platforms</h2>
+            </div>
+            
+            <div class="card-grid">
+                <a href="partners/mercado-bitcoin.html" class="page-card">
+                    <div class="card-header">
+                        <span class="card-title">Mercado Bitcoin</span>
+                        <span class="badge badge-blue">Exchange</span>
+                    </div>
+                    <p class="card-description">Latin America's largest crypto exchange expanding into RWA tokenization with focus on Brazilian and regional markets.</p>
+                    <div class="card-meta">
+                        <span class="asset-tag">🇧🇷 Brazil</span>
+                        <span class="asset-tag">💱 Exchange</span>
+                    </div>
+                </a>
+
+                <a href="partners/linklogis.html" class="page-card">
+                    <div class="card-header">
+                        <span class="card-title">LinkLogis</span>
+                        <span class="badge badge-blue">Supply Chain</span>
+                    </div>
+                    <p class="card-description">Supply chain finance platform tokenizing trade receivables and supply chain assets for institutional investors in Asia.</p>
+                    <div class="card-meta">
+                        <span class="asset-tag">🇨🇳 China</span>
+                        <span class="asset-tag">🔗 Trade Finance</span>
+                    </div>
+                </a>
+            </div>
+        </section>
+    </main>
+</body>
+</html>

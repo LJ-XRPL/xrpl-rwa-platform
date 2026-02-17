@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>XRPL Real-World Asset Ecosystem | Investor Relations</title>
+    <style>
+        :root { --ripple-blue: #0085FF; --ripple-cyan: #00B7FF; --dark-navy: #1A1A2E; --deep-navy: #0F0F1A; --card-bg: rgba(26, 26, 46, 0.7); --card-border: rgba(0, 133, 255, 0.15); --text-primary: #FFFFFF; --text-secondary: #A0A8B8; --text-muted: #6B7280; --financial-blue: #0085FF; --tangible-green: #10B981; --accent-glow: rgba(0, 133, 255, 0.3); --glass-bg: rgba(15, 15, 26, 0.8); --glass-border: rgba(255, 255, 255, 0.08); }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--deep-navy); color: var(--text-primary); line-height: 1.6; min-height: 100vh; }
+        body::before { content: ''; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: radial-gradient(ellipse at 20% 20%, rgba(0, 133, 255, 0.08) 0%, transparent 50%), radial-gradient(ellipse at 80% 80%, rgba(0, 183, 255, 0.05) 0%, transparent 50%), linear-gradient(180deg, var(--deep-navy) 0%, var(--dark-navy) 100%); z-index: -1; }
+        .header { background: var(--glass-bg); backdrop-filter: blur(20px); border-bottom: 1px solid var(--glass-border); padding: 1rem 2rem; position: sticky; top: 0; z-index: 100; }
+        .header-content { max-width: 1400px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; }
+        .logo-area { display: flex; align-items: center; gap: 1rem; }
+        .logo-placeholder { width: 48px; height: 48px; background: linear-gradient(135deg, var(--ripple-blue), var(--ripple-cyan)); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1.2rem; box-shadow: 0 4px 20px var(--accent-glow); }
+        .logo-text { font-size: 1.1rem; font-weight: 600; color: var(--text-primary); }
+        .logo-text span { color: var(--ripple-cyan); }
+        .container { max-width: 1400px; margin: 0 auto; padding: 2rem; }
+        .hero { text-align: center; padding: 4rem 1rem; position: relative; }
+        .hero::after { content: ''; position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); width: 200px; height: 1px; background: linear-gradient(90deg, transparent, var(--ripple-blue), transparent); }
+        .hero h1 { font-size: 3rem; font-weight: 700; margin-bottom: 1rem; background: linear-gradient(135deg, var(--text-primary) 0%, var(--ripple-cyan) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .hero-subtitle { font-size: 1.2rem; color: var(--text-secondary); max-width: 700px; margin: 0 auto 2rem; }
+        .hero-stats { display: flex; justify-content: center; gap: 3rem; flex-wrap: wrap; }
+        .stat-item { text-align: center; }
+        .stat-value { font-size: 2.5rem; font-weight: 700; color: var(--ripple-cyan); text-shadow: 0 0 30px var(--accent-glow); }
+        .stat-label { font-size: 0.9rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
+        .dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin: 3rem 0; }
+        .dashboard-card { background: var(--card-bg); backdrop-filter: blur(10px); border: 1px solid var(--card-border); border-radius: 16px; padding: 1.5rem; transition: all 0.3s ease; }
+        .dashboard-card:hover { border-color: var(--ripple-blue); box-shadow: 0 8px 32px var(--accent-glow); transform: translateY(-2px); }
+        .dashboard-card h3 { font-size: 0.85rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; }
+        .dashboard-card h3::before { content: ''; width: 8px; height: 8px; background: var(--ripple-blue); border-radius: 50%; }
+        .total-count { font-size: 3rem; font-weight: 700; color: var(--text-primary); }
+        .total-label { color: var(--text-secondary); font-size: 0.9rem; }
+        .distribution-list { display: flex; flex-direction: column; gap: 0.75rem; }
+        .distribution-item { display: flex; justify-content: space-between; align-items: center; }
+        .distribution-label { font-size: 0.9rem; color: var(--text-secondary); }
+        .distribution-bar { flex: 1; max-width: 120px; height: 8px; background: rgba(255, 255, 255, 0.1); border-radius: 4px; overflow: hidden; margin: 0 1rem; }
+        .distribution-fill { height: 100%; background: linear-gradient(90deg, var(--ripple-blue), var(--ripple-cyan)); border-radius: 4px; transition: width 0.5s ease; }
+        .distribution-value { font-size: 0.85rem; color: var(--text-primary); font-weight: 600; min-width: 30px; text-align: right; }
+        .asset-breakdown { display: flex; flex-direction: column; gap: 1rem; }
+        .asset-type-row { display: flex; align-items: center; gap: 1rem; }
+        .asset-type-label { font-size: 0.9rem; color: var(--text-secondary); min-width: 100px; }
+        .asset-type-badge { padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; }
+        .asset-type-badge.financial { background: rgba(0, 133, 255, 0.2); color: var(--financial-blue); }
+        .asset-type-badge.tangible { background: rgba(16, 185, 129, 0.2); color: var(--tangible-green); }
+        .asset-type-count { font-size: 1.5rem; font-weight: 700; color: var(--text-primary); }
+        .permission-spectrum { display: flex; flex-direction: column; gap: 0.5rem; }
+        .permission-bar { height: 12px; background: rgba(255, 255, 255, 0.1); border-radius: 6px; overflow: hidden; }
+        .permission-fill { height: 100%; border-radius: 6px; background: linear-gradient(90deg, #10B981 0%, #0085FF 50%, #8B5CF6 100%); }
+        .permission-labels { display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--text-muted); margin-top: 0.25rem; }
+        .permission-avg { text-align: center; margin-top: 0.75rem; font-size: 0.9rem; color: var(--text-secondary); }
+        .permission-avg strong { color: var(--ripple-cyan); font-size: 1.1rem; }
+        .filter-bar { background: var(--card-bg); backdrop-filter: blur(10px); border: 1px solid var(--card-border); border-radius: 16px; padding: 1.5rem; margin: 2rem 0; display: flex; flex-wrap: wrap; gap: 1rem; align-items: flex-end; }
+        .filter-group { display: flex; flex-direction: column; gap: 0.5rem; flex: 1; min-width: 180px; }
+        .filter-group label { font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+        .filter-group select { background: var(--deep-navy); border: 1px solid var(--card-border); border-radius: 8px; padding: 0.75rem 1rem; color: var(--text-primary); font-size: 0.95rem; cursor: pointer; transition: all 0.2s ease; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23A0A8B8' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10l-5 5z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 1rem center; }
+        .filter-group select:hover, .filter-group select:focus { border-color: var(--ripple-blue); outline: none; box-shadow: 0 0 0 3px var(--accent-glow); }
+        .filter-group select option { background: var(--dark-navy); }
+        .filter-results { font-size: 0.9rem; color: var(--text-secondary); padding: 0.75rem 0; }
+        .filter-results span { color: var(--ripple-cyan); font-weight: 600; }
+        .assets-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); gap: 1.5rem; margin: 2rem 0; }
+        .asset-card { background: var(--card-bg); backdrop-filter: blur(10px); border: 1px solid var(--card-border); border-radius: 16px; padding: 1.5rem; transition: all 0.3s ease; display: flex; flex-direction: column; gap: 1rem; }
+        .asset-card:hover { border-color: var(--ripple-blue); box-shadow: 0 12px 40px var(--accent-glow); transform: translateY(-4px); }
+        .asset-card.hidden { display: none; }
+        .card-header { display: flex; justify-content: space-between; align-items: flex-start; }
+        .partner-info { display: flex; align-items: center; gap: 1rem; }
+        .partner-logo { width: 48px; height: 48px; background: linear-gradient(135deg, rgba(0, 133, 255, 0.2), rgba(0, 183, 255, 0.1)); border: 1px solid var(--ripple-blue); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1rem; color: var(--ripple-cyan); }
+        .partner-name { font-size: 1.2rem; font-weight: 600; color: var(--text-primary); }
+        .card-badges { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+        .badge { padding: 0.35rem 0.75rem; border-radius: 20px; font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+        .badge-type { background: rgba(0, 133, 255, 0.2); color: var(--financial-blue); }
+        .badge-type.tangible { background: rgba(16, 185, 129, 0.2); color: var(--tangible-green); }
+        .badge-subtype { background: rgba(255, 255, 255, 0.1); color: var(--text-secondary); border: 1px solid rgba(255, 255, 255, 0.1); }
+        .badge-jurisdiction { background: rgba(139, 92, 246, 0.2); color: #A78BFA; }
+        .card-description { font-size: 0.9rem; color: var(--text-secondary); line-height: 1.6; flex: 1; }
+        .card-metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; padding: 1rem; background: rgba(0, 0, 0, 0.2); border-radius: 10px; }
+        .metric { text-align: center; }
+        .metric-label { font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.25rem; }
+        .metric-value { font-size: 0.85rem; font-weight: 600; color: var(--text-primary); }
+        .card-secondary { display: flex; align-items: center; gap: 0.75rem; padding-top: 0.75rem; border-top: 1px solid var(--glass-border); }
+        .secondary-label { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; }
+        .secondary-value { font-size: 0.85rem; color: var(--ripple-cyan); font-weight: 500; }
+        .footer { background: var(--glass-bg); backdrop-filter: blur(10px); border-top: 1px solid var(--glass-border); padding: 3rem 2rem; margin-top: 4rem; }
+        .footer-content { max-width: 1400px; margin: 0 auto; display: flex; flex-direction: column; gap: 2rem; }
+        .footer-disclaimer { background: rgba(255, 193, 7, 0.1); border: 1px solid rgba(255, 193, 7, 0.3); border-radius: 12px; padding: 1.5rem; }
+        .footer-disclaimer h4 { color: #FFC107; font-size: 0.9rem; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.5rem; }
+        .footer-disclaimer p { font-size: 0.85rem; color: var(--text-secondary); line-height: 1.7; }
+        .footer-bottom { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
+        .footer-copyright { font-size: 0.85rem; color: var(--text-muted); }
+        .footer-powered { display: flex; align-items: center; gap: 0.75rem; padding: 0.5rem 1rem; background: rgba(0, 133, 255, 0.1); border: 1px solid var(--ripple-blue); border-radius: 8px; }
+        .footer-powered span { font-size: 0.85rem; color: var(--ripple-cyan); font-weight: 500; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .asset-card { animation: fadeIn 0.5s ease forwards; }
+        .asset-card:nth-child(1) { animation-delay: 0.05s; } .asset-card:nth-child(2) { animation-delay: 0.1s; } .asset-card:nth-child(3) { animation-delay: 0.15s; } .asset-card:nth-child(4) { animation-delay: 0.2s; } .asset-card:nth-child(5) { animation-delay: 0.25s; } .asset-card:nth-child(6) { animation-delay: 0.3s; } .asset-card:nth-child(7) { animation-delay: 0.35s; } .asset-card:nth-child(8) { animation-delay: 0.4s; } .asset-card:nth-child(9) { animation-delay: 0.45s; } .asset-card:nth-child(10) { animation-delay: 0.5s; } .asset-card:nth-child(11) { animation-delay: 0.55s; } .asset-card:nth-child(12) { animation-delay: 0.6s; } .asset-card:nth-child(13) { animation-delay: 0.65s; }
+        @media (max-width: 768px) { .hero h1 { font-size: 2rem; } .hero-stats { gap: 1.5rem; } .stat-value { font-size: 2rem; } .dashboard { grid-template-columns: 1fr; } .assets-grid { grid-template-columns: 1fr; } .card-metrics { grid-template-columns: 1fr; gap: 0.5rem; } .filter-bar { flex-direction: column; } .filter-group { width: 100%; } .footer-bottom { flex-direction: column; text-align: center; } }
+        @media (max-width: 480px) { .container { padding: 1rem; } .header { padding: 1rem; } .hero { padding: 2rem 1rem; } .hero h1 { font-size: 1.75rem; } .asset-card { padding: 1rem; } }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <div class="logo-area">
+                <div class="logo-placeholder">XRPL</div>
+                <div class="logo-text">Ripple | XRPL RWA</div>
+            </div>
+        </div>
+    </header>
+    <main class="container">
+        <section class="hero">
+            <h1>XRPL Real-World Asset Ecosystem</h1>
+            <p class="hero-subtitle">Institutional-grade tokenization infrastructure powering the next generation of real-world asset investments. Secure, compliant, and accessible across 8+ jurisdictions.</p>
+            <div class="hero-stats">
+                <div class="stat-item"><div class="stat-value">13</div><div class="stat-label">Products</div></div>
+                <div class="stat-item"><div class="stat-value">8+</div><div class="stat-label">Jurisdictions</div></div>
+                <div class="stat-item"><div class="stat-value">$2.5B+</div><div class="stat-label">Tokenized Assets</div></div>
+            </div>
+        </section>
+        <section class="dashboard">
+            <div class="dashboard-card"><h3>Total Partners</h3><div class="total-count">13</div><div class="total-label">Active RWA Partners</div></div>
+            <div class="dashboard-card"><h3>Geographic Distribution</h3><div class="distribution-list" id="geo-distribution"></div></div>
+            <div class="dashboard-card"><h3>Asset Type Breakdown</h3><div class="asset-breakdown"><div class="asset-type-row"><span class="asset-type-label">Financial</span><span class="asset-type-badge financial">Financial</span><span class="asset-type-count">10</span></div><div class="asset-type-row"><span class="asset-type-label">Tangible</span><span class="asset-type-badge tangible">Tangible</span><span class="asset-type-count">3</span></div></div></div>
+            <div class="dashboard-card"><h3>Permissioning Spectrum</h3><div class="permission-spectrum"><div class="permission-bar"><div class="permission-fill" style="width: 76%;"></div></div><div class="permission-labels"><span>Retail</span><span>Accredited</span><span>Institutional</span></div><div class="permission-avg">Average: <strong>76% Permissioned</strong></div></div></div>
+        </section>
+        <section class="filter-bar">
+            <div class="filter-group"><label>Asset Type</label><select id="filter-asset-type"><option value="all">All Types</option><option value="Financial Asset">Financial Asset</option><option value="Tangible Asset">Tangible Asset</option></select></div>
+            <div class="filter-group"><label>Sub-Type</label><select id="filter-subtype"><option value="all">All Sub-Types</option><option value="MMF">MMF</option><option value="Property">Property</option><option value="Precious Metals">Precious Metals</option><option value="Energy">Energy</option><option value="DCP">DCP</option><option value="Private Credit">Private Credit</option><option value="Sukuk">Sukuk</option></select></div>
+            <div class="filter-group"><label>Jurisdiction</label><select id="filter-jurisdiction"><option value="all">All Jurisdictions</option><option value="UAE (Dubai)">UAE (Dubai)</option><option value="US (Reg D)">US (Reg D)</option><option value="UK">UK</option><option value="BVI">BVI</option><option value="Singapore">Singapore</option><option value="APAC">APAC</option><option value="ADGM">ADGM</option><option value="Brazil">Brazil</option><option value="Argentina">Argentina</option><option value="SG/HK & worldwide">SG/HK & worldwide</option></select></div>
+            <div class="filter-group"><label>Investor Segment</label><select id="filter-segment"><option value="all">All Segments</option><option value="Institutional">Institutional Only</option><option value="Retail">Institutional & Retail</option></select></div>
+            <div class="filter-results">Showing <span id="results-count">13</span> products</div>
+        </section>
+        <section class="assets-grid" id="assets-grid"></section>
+    </main>
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-disclaimer"><h4>WARNING Investment Risk Disclaimer</h4><p>Past performance is not indicative of future results. Tokenized real-world assets involve significant risks including but not limited to: market volatility, liquidity risk, regulatory uncertainty, counterparty risk, and potential loss of principal. Investors should carefully consider their investment objectives, risk tolerance, and consult with qualified financial advisors before investing. This platform does not provide investment advice.</p></div>
+            <div class="footer-bottom"><div class="footer-copyright">2024 Ripple. All rights reserved. XRPL is a trademark of Ripple.</div><div class="footer-powered"><span>Powered by XRPL</span></div></div>
+        </div>
+    </footer>
+    <script>
+        const partners = [
+            { partner: "Ctrl Alt", assetType: "Tangible Asset", subType: "Property", jurisdiction: "UAE (Dubai)", description: "A leading tokenization platform partnering with the Dubai Land Department to tokenize property title deeds on XRPL. Pilot phase: fractional real estate investment in Dubai starting from ~2,000 AED.", investorSegments: "Institutional & Retail", permissioned: "95% - High", secondaryTrading: "XRPL Native DEX / AMM", minInvestment: "AED 2,000 (~$545)" },
+            { partner: "Ctrl Alt", assetType: "Tangible Asset", subType: "Precious Metals", jurisdiction: "UAE (Dubai)", description: "Partnering with Dubai-based Billiton Diamond to tokenize polished diamonds on XRPL, supported by Ripple Custody. ~AED 1B (~$280M) in certified polished diamonds.", investorSegments: "Institutional & Retail", permissioned: "90% - High", secondaryTrading: "XRPL Native DEX / AMM", minInvestment: "~$1,000+" },
+            { partner: "Justoken", assetType: "Tangible Asset", subType: "Energy", jurisdiction: "Argentina", description: "Partnered with YPF to tokenize ~$860M in renewable energy contracts, facilitating new ways of contracting energy.", investorSegments: "Institutional", permissioned: "50% - Medium", secondaryTrading: "Peer-to-Peer (P2P) on XRPL", minInvestment: "Varies by Project" },
+            { partner: "Zeconomy / Guggenheim", assetType: "Financial Asset", subType: "DCP", jurisdiction: "US (Reg D)", description: "The first institutional-grade commercial paper product on XRPL, backed by Guggenheim Treasury Services.", investorSegments: "Institutional", permissioned: "98% - Very High", secondaryTrading: "Atomic Cross-Chain (Zeno)", minInvestment: "$250,000" },
+            { partner: "Ondo Finance", assetType: "Financial Asset", subType: "MMF", jurisdiction: "US (Reg D)", description: "Among the largest issuers of tokenized treasuries ($1.4B+ AUM); OUSG product gives 24/7 access to short-term U.S. Treasuries via XRPL.", investorSegments: "Institutional", permissioned: "95% - High", secondaryTrading: "Permissioned Secondary Markets", minInvestment: "$5,000" },
+            { partner: "Archax", assetType: "Financial Asset", subType: "MMF", jurisdiction: "UK", description: "FCA-regulated digital securities exchange offering tokenized money market funds like the abrdn USD Liquidity Fund.", investorSegments: "Institutional", permissioned: "98% - Very High", secondaryTrading: "Archax MTF (Regulated Exchange)", minInvestment: "$50,000" },
+            { partner: "OpenEden", assetType: "Financial Asset", subType: "MMF", jurisdiction: "BVI", description: "BVI-regulated issuer of TBILL, a tokenized Fund holding U.S. T-bills with Moody's-rated custody, available for 24/7 mint/redeem.", investorSegments: "Institutional", permissioned: "75% - Medium", secondaryTrading: "24/7 Mint/Redeem / OTC", minInvestment: "$100 (Secondary)" },
+            { partner: "Phillip Securities", assetType: "Financial Asset", subType: "MMF", jurisdiction: "Singapore", description: "Securities brokerage arm of PhillipCapital Group, a major Singapore financial services firm.", investorSegments: "Institutional", permissioned: "55% - Medium", secondaryTrading: "Internal Crossing Engine", minInvestment: "S$100" },
+            { partner: "MarketNode", assetType: "Financial Asset", subType: "MMF", jurisdiction: "APAC", description: "Euroclear, Temasek, SGX and HSBC-backed tokenization platform focused on institutional fixed-income.", investorSegments: "Institutional", permissioned: "85% - High", secondaryTrading: "Institutional Liquidity Hubs", minInvestment: "Institutional Only" },
+            { partner: "Assnture", assetType: "Financial Asset", subType: "Sukuk", jurisdiction: "ADGM", description: "Web3 investment bank regulated by ADGM specializing in Islamic finance. Primary issuance of institutional sukuk.", investorSegments: "Institutional & Retail", permissioned: "85% - High", secondaryTrading: "ADGM Digital Exchange", minInvestment: "$50,000 (Exempt)" },
+            { partner: "Vert Capital", assetType: "Financial Asset", subType: "Private Credit", jurisdiction: "Brazil", description: "Focused on debt capital markets infrastructure, enabling fintechs, agribusiness, and real estate companies.", investorSegments: "Institutional", permissioned: "70% - Medium", secondaryTrading: "Native DEX (Secondary Crowd)", minInvestment: "BRL 1,000 (~$200)" },
+            { partner: "Mercado Bitcoin", assetType: "Financial Asset", subType: "Private Credit", jurisdiction: "Brazil", description: "Leading LatAm exchange, integrating RLUSD and stablecoin listings; bringing XRPL assets to retail.", investorSegments: "Institutional & Retail", permissioned: "60% - Medium", secondaryTrading: "MB Order Book / RLUSD Pools", minInvestment: "BRL 100 (~$20)" },
+            { partner: "Linklogis", assetType: "Financial Asset", subType: "Private Credit", jurisdiction: "SG/HK & worldwide", description: "Trade receivables in both locked up (escrowed) cash and credit-based receivables, transferable on-chain.", investorSegments: "Institutional", permissioned: "70% - Medium", secondaryTrading: "Institutional Marketplace B2B", minInvestment: "Custom" }
+        ];
+
+        function getInitials(name) {
+            if (name.includes('/')) return name.split('/').map(n => n[0]).join('').slice(0, 2);
+            return name.slice(0, 2).toUpperCase();
+        }
+
+        function renderGeoDistribution() {
+            const geoCount = {};
+            partners.forEach(p => { geoCount[p.jurisdiction] = (geoCount[p.jurisdiction] || 0) + 1; });
+            const sorted = Object.entries(geoCount).sort((a, b) => b[1] - a[1]);
+            const max = sorted[0][1];
+            document.getElementById('geo-distribution').innerHTML = sorted.map(([jur, count]) => '<div class="distribution-item"><span class="distribution-label">' + jur + '</span><div class="distribution-bar"><div class="distribution-fill" style="width: ' + ((count / max) * 100) + '%"></div></div><span class="distribution-value">' + count + '</span></div>').join('');
+        }
+
+        function renderAssetCard(partner) {
+            const isTangible = partner.assetType === 'Tangible Asset';
+            return '<div class="asset-card" data-asset-type="' + partner.assetType + '" data-subtype="' + partner.subType + '" data-jurisdiction="' + partner.jurisdiction + '" data-segment="' + partner.investorSegments + '">' +
+                '<div class="card-header"><div class="partner-info"><div class="partner-logo">' + getInitials(partner.partner) + '</div><div class="partner-name">' + partner.partner + '</div></div></div>' +
+                '<div class="card-badges"><span class="badge ' + (isTangible ? 'badge-type tangible' : 'badge-type') + '">' + partner.assetType + '</span><span class="badge badge-subtype">' + partner.subType + '</span><span class="badge badge-jurisdiction">' + partner.jurisdiction + '</span></div>' +
+                '<p class="card-description">' + partner.description + '</p>' +
+                '<div class="card-metrics"><div class="metric"><div class="metric-label">Min Investment</div><div class="metric-value">' + partner.minInvestment + '</div></div><div class="metric"><div class="metric-label">Investors</div><div class="metric-value">' + partner.investorSegments + '</div></div><div class="metric"><div class="metric-label">Permissioning</div><div class="metric-value">' + partner.permissioned + '</div></div></div>' +
+                '<div class="card-secondary"><span class="secondary-label">Secondary:</span><span class="secondary-value">' + partner.secondaryTrading + '</span></div></div>';
+        }
+
+        function renderAllCards() {
+            document.getElementById('assets-grid').innerHTML = partners.map(renderAssetCard).join('');
+        }
+
+        function filterCards() {
+            const assetType = document.getElementById('filter-asset-type').value;
+            const subtype = document.getElementById('filter-subtype').value;
+            const jurisdiction = document.getElementById('filter-jurisdiction').value;
+            const segment = document.getElementById('filter-segment').value;
+            const cards = document.querySelectorAll('.asset-card');
+            let visibleCount = 0;
+            cards.forEach(card => {
+                const cardAssetType = card.dataset.assetType;
+                const cardSubtype = card.dataset.subtype;
+                const cardJurisdiction = card.dataset.jurisdiction;
+                const cardSegment = card.dataset.segment;
+                const matchAssetType = assetType === 'all' || cardAssetType === assetType;
+                const matchSubtype = subtype === 'all' || cardSubtype === subtype;
+                const matchJurisdiction = jurisdiction === 'all' || cardJurisdiction === jurisdiction;
+                const matchSegment = segment === 'all' || (segment === 'Institutional' && cardSegment === 'Institutional') || (segment === 'Retail' && cardSegment.includes('Retail'));
+                const visible = matchAssetType && matchSubtype && matchJurisdiction && matchSegment;
+                card.classList.toggle('hidden', !visible);
+                if (visible) visibleCount++;
+            });
+            document.getElementById('results-count').textContent = visibleCount;
+        }
+
+        document.querySelectorAll('.filter-group select').forEach(select => { select.addEventListener('change', filterCards); });
+        renderGeoDistribution();
+        renderAllCards();
+    </script>
+</body>
+</html>

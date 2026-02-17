@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ctrl Alt Property | XRPL RWA Investor Deep-Dive</title>
+    <style>
+        :root { --ripple-blue: #0085FF; --ripple-cyan: #00B7FF; --ripple-dark: #1A1A2E; --ripple-darker: #0F0F1A; --glass-bg: rgba(255, 255, 255, 0.05); --glass-border: rgba(255, 255, 255, 0.1); --glass-highlight: rgba(255, 255, 255, 0.15); --text-primary: #FFFFFF; --text-secondary: #A0A0B0; --text-muted: #6B6B7B; --success: #00C853; --warning: #FFB300; --danger: #FF5252; --info: #00B7FF; --gradient-primary: linear-gradient(135deg, var(--ripple-blue) 0%, var(--ripple-cyan) 100%); --gradient-dark: linear-gradient(180deg, var(--ripple-darker) 0%, var(--ripple-dark) 100%); }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Roboto', sans-serif; background: var(--gradient-dark); color: var(--text-primary); line-height: 1.6; min-height: 100vh; }
+        .container { max-width: 1400px; margin: 0 auto; padding: 0 24px; }
+        .header { background: var(--glass-bg); backdrop-filter: blur(20px); border-bottom: 1px solid var(--glass-border); position: sticky; top: 0; z-index: 1000; padding: 16px 0; }
+        .header-content { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; }
+        .logo-section { display: flex; align-items: center; gap: 16px; }
+        .logo-placeholder { width: 56px; height: 56px; background: var(--gradient-primary); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 20px; color: white; box-shadow: 0 4px 20px rgba(0, 133, 255, 0.4); }
+        .brand-info h1 { font-size: 24px; font-weight: 700; background: var(--gradient-primary); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .brand-info .tagline { font-size: 13px; color: var(--text-secondary); }
+        .badges { display: flex; gap: 10px; flex-wrap: wrap; }
+        .badge { padding: 8px 16px; border-radius: 20px; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; display: flex; align-items: center; gap: 6px; }
+        .badge-xrpl { background: rgba(0, 133, 255, 0.2); border: 1px solid var(--ripple-blue); color: var(--ripple-cyan); }
+        .badge-jurisdiction { background: rgba(255, 179, 0, 0.2); border: 1px solid var(--warning); color: var(--warning); }
+        .badge-asset { background: rgba(0, 200, 83, 0.2); border: 1px solid var(--success); color: var(--success); }
+        .badge-property { background: rgba(156, 39, 176, 0.2); border: 1px solid #9C27B0; color: #CE93D8; }
+        .nav-back { display: inline-flex; align-items: center; gap: 8px; color: var(--text-secondary); text-decoration: none; font-size: 14px; padding: 16px 0; transition: color 0.3s; }
+        .nav-back:hover { color: var(--ripple-cyan); }
+        .hero { padding: 48px 0; text-align: center; }
+        .hero h2 { font-size: 42px; font-weight: 800; margin-bottom: 16px; background: linear-gradient(135deg, #FFFFFF 0%, var(--ripple-cyan) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .hero .subtitle { font-size: 20px; color: var(--text-secondary); max-width: 800px; margin: 0 auto 32px; }
+        .glass-card { background: var(--glass-bg); backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-radius: 16px; padding: 32px; margin-bottom: 24px; }
+        .card-title { font-size: 20px; font-weight: 700; margin-bottom: 20px; display: flex; align-items: center; gap: 12px; }
+        .card-title .icon { width: 32px; height: 32px; background: var(--gradient-primary); border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+        .summary-text { font-size: 16px; color: var(--text-secondary); line-height: 1.8; }
+        .summary-text p { margin-bottom: 20px; }
+        .highlight-box { background: linear-gradient(135deg, rgba(0, 133, 255, 0.1) 0%, rgba(0, 183, 255, 0.1) 100%); border-left: 4px solid var(--ripple-blue); padding: 20px 24px; margin: 24px 0; border-radius: 0 8px 8px 0; }
+        .highlight-box h4 { color: var(--ripple-cyan); margin-bottom: 8px; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; }
+        .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
+        .metric-card { background: var(--glass-highlight); border-radius: 12px; padding: 24px; border: 1px solid var(--glass-border); }
+        .metric-label { font-size: 12px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+        .metric-value { font-size: 28px; font-weight: 700; color: var(--text-primary); margin-bottom: 8px; }
+        .metric-sub { font-size: 13px; color: var(--text-secondary); }
+        .metric-value.success { color: var(--success); }
+        .metric-value.warning { color: var(--warning); }
+        .metric-value.info { color: var(--info); }
+        .permission-gauge { margin-top: 16px; }
+        .gauge-container { position: relative; height: 12px; background: var(--ripple-darker); border-radius: 6px; overflow: hidden; }
+        .gauge-fill { height: 100%; border-radius: 6px; background: var(--gradient-primary); }
+        .gauge-labels { display: flex; justify-content: space-between; margin-top: 8px; font-size: 11px; color: var(--text-muted); }
+        .gauge-value { text-align: center; margin-top: 8px; font-size: 24px; font-weight: 700; color: var(--ripple-cyan); }
+        .detailed-metrics { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-top: 32px; }
+        .detail-item { background: var(--ripple-darker); border-radius: 8px; padding: 16px; }
+        .detail-item h4 { font-size: 12px; color: var(--text-muted); text-transform: uppercase; margin-bottom: 8px; }
+        .detail-item p { font-size: 15px; color: var(--text-primary); }
+        @media (max-width: 768px) { .detailed-metrics { grid-template-columns: 1fr; } .hero h2 { font-size: 28px; } .header-content { flex-direction: column; align-items: flex-start; } .badges { width: 100%; } .metrics-grid { grid-template-columns: 1fr; } .glass-card { padding: 20px; } }
+        .section { padding: 24px 0; }
+        .section-title { font-size: 28px; font-weight: 700; margin-bottom: 24px; display: flex; align-items: center; gap: 16px; }
+        .section-title::after { content: ''; flex: 1; height: 1px; background: linear-gradient(90deg, var(--glass-border) 0%, transparent 100%); }
+        .asset-deepdive h3 { font-size: 22px; color: var(--ripple-cyan); margin: 32px 0 16px; padding-bottom: 8px; border-bottom: 1px solid var(--glass-border); }
+        .asset-deepdive h3:first-child { margin-top: 0; }
+        .market-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin: 24px 0; }
+        .stat-box { background: var(--ripple-darker); border-radius: 12px; padding: 20px; text-align: center; border: 1px solid var(--glass-border); }
+        .stat-value { font-size: 32px; font-weight: 800; background: var(--gradient-primary); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .stat-label { font-size: 13px; color: var(--text-secondary); margin-top: 4px; }
+        .stat-change { font-size: 12px; margin-top: 8px; padding: 4px 8px; border-radius: 4px; display: inline-block; }
+        .stat-change.positive { background: rgba(0, 200, 83, 0.2); color: var(--success); }
+        .stat-change.negative { background: rgba(255, 82, 82, 0.2); color: var(--danger); }
+        .feature-list { list-style: none; margin: 16px 0; }
+        .feature-list li { padding: 12px 0; padding-left: 32px; position: relative; border-bottom: 1px solid var(--glass-border); }
+        .feature-list li:last-child { border-bottom: none; }
+        .feature-list li::before { content: '✓'; position: absolute; left: 0; color: var(--success); font-weight: 700; }
+        .feature-list li strong { color: var(--ripple-cyan); }
+        .tech-flow { display: flex; flex-direction: column; gap: 16px; margin: 24px 0; }
+        .tech-step { display: flex; gap: 16px; align-items: flex-start; }
+        .step-number { width: 40px; height: 40px; background: var(--gradient-primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 18px; flex-shrink: 0; }
+        .step-content { flex: 1; padding: 16px; background: var(--ripple-darker); border-radius: 12px; border: 1px solid var(--glass-border); }
+        .step-content h4 { color: var(--ripple-cyan); margin-bottom: 8px; }
+        .step-content p { font-size: 14px; color: var(--text-secondary); }
+        .code-block { background: #0a0a14; border-radius: 8px; padding: 16px; font-family: 'Monaco', 'Consolas', monospace; font-size: 13px; color: var(--ripple-cyan); overflow-x: auto; margin: 12px 0; border: 1px solid var(--glass-border); }
+        .risk-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+        .risk-card { background: var(--ripple-darker); border-radius: 12px; padding: 24px; border-left: 4px solid var(--warning); }
+        .risk-card.high { border-left-color: var(--danger); }
+        .risk-card.medium { border-left-color: var(--warning); }
+        .risk-card.low { border-left-color: var(--success); }
+        .risk-card h4 { font-size: 16px; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+        .risk-level { font-size: 10px; padding: 4px 8px; border-radius: 4px; text-transform: uppercase; font-weight: 700; }
+        .risk-level.high { background: rgba(255, 82, 82, 0.2); color: var(--danger); }
+        .risk-level.medium { background: rgba(255, 179, 0, 0.2); color: var(--warning); }
+        .risk-level.low { background: rgba(0, 200, 83, 0.2); color: var(--success); }
+        .risk-card p { font-size: 14px; color: var(--text-secondary); line-height: 1.6; }
+        .trading-info { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-top: 24px; }
+        .trading-card { background: var(--ripple-darker); border-radius: 12px; padding: 24px; border: 1px solid var(--glass-border); }
+        .trading-card h4 { color: var(--ripple-cyan); margin-bottom: 12px; font-size: 16px; }
+        .trading-card ul { list-style: none; }
+        .trading-card li { padding: 8px 0; color: var(--text-secondary); font-size: 14px; border-bottom: 1px solid var(--glass-border); }
+        .trading-card li:last-child { border-bottom: none; }
+        .reg-item { background: var(--ripple-darker); border-radius: 12px; padding: 24px; margin-bottom: 16px; border: 1px solid var(--glass-border); }
+        .reg-item h4 { color: var(--ripple-cyan); margin-bottom: 12px; font-size: 18px; }
+        .reg-item ul { list-style: none; margin-top: 12px; }
+        .reg-item li { padding: 8px 0; color: var(--text-secondary); font-size: 14px; padding-left: 20px; position: relative; }
+        .reg-item li::before { content: '•'; position: absolute; left: 0; color: var(--ripple-blue); }
+        .team-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 24px; margin-top: 24px; }
+        .team-member { background: var(--ripple-darker); border-radius: 16px; padding: 24px; text-align: center; border: 1px solid var(--glass-border); }
+        .member-avatar { width: 80px; height: 80px; background: var(--gradient-primary); border-radius: 50%; margin: 0 auto 16px; display: flex; align-items: center; justify-content: center; font-size: 28px; font-weight: 700; }
+        .member-name { font-size: 18px; font-weight: 600; margin-bottom: 4px; }
+        .member-role { font-size: 13px; color: var(--text-muted); margin-bottom: 12px; }
+        .member-bio { font-size: 13px; color: var(--text-secondary); line-height: 1.5; }
+        .footer { background: var(--ripple-darker); border-top: 1px solid var(--glass-border); padding: 32px 0; margin-top: 48px; }
+        .footer-content { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; }
+        .footer-logo { display: flex; align-items: center; gap: 12px; }
+        .footer-logo span { font-weight: 600; color: var(--text-secondary); }
+        .footer-links { display: flex; gap: 24px; }
+        .footer-links a { color: var(--text-muted); text-decoration: none; font-size: 14px; }
+        .footer-links a:hover { color: var(--ripple-cyan); }
+        .footer-disclaimer { width: 100%; padding-top: 24px; margin-top: 24px; border-top: 1px solid var(--glass-border); font-size: 12px; color: var(--text-muted); text-align: center; }
+        .key-points { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin: 24px 0; }
+        .key-point { background: var(--ripple-darker); border-radius: 12px; padding: 24px; border-left: 4px solid var(--ripple-blue); }
+        .key-point h4 { color: var(--ripple-cyan); margin-bottom: 8px; font-size: 16px; }
+        .key-point p { font-size: 14px; color: var(--text-secondary); line-height: 1.6; }
+        .legal-box { background: rgba(255, 179, 0, 0.1); border: 1px solid var(--warning); border-radius: 12px; padding: 24px; margin: 24px 0; }
+        .legal-box h4 { color: var(--warning); margin-bottom: 12px; font-size: 14px; }
+        .legal-box p { font-size: 13px; color: var(--text-secondary); line-height: 1.6; }
+        .process-diagram { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; margin: 32px 0; padding: 24px; background: var(--ripple-darker); border-radius: 16px; }
+        .process-step { flex: 1; min-width: 150px; text-align: center; position: relative; }
+        .process-step:not(:last-child)::after { content: '→'; position: absolute; right: -20px; top: 50%; transform: translateY(-50%); font-size: 24px; color: var(--ripple-blue); }
+        @media (max-width: 768px) { .process-step:not(:last-child)::after { display: none; } .process-diagram { flex-direction: column; } }
+        .process-icon { width: 64px; height: 64px; background: var(--gradient-primary); border-radius: 16px; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px; font-size: 28px; }
+        .process-label { font-size: 14px; font-weight: 600; }
+        .process-sublabel { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+        .data-table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+        .data-table th { text-align: left; padding: 12px; background: var(--ripple-darker); color: var(--text-muted); font-size: 12px; text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid var(--glass-border); }
+        .data-table td { padding: 12px; border-bottom: 1px solid var(--glass-border); font-size: 14px; color: var(--text-secondary); }
+        .data-table tr:hover td { background: var(--glass-highlight); }
+        .timeline { position: relative; padding-left: 32px; margin: 24px 0; }
+        .timeline::before { content: ''; position: absolute; left: 8px; top: 0; bottom: 0; width: 2px; background: var(--glass-border); }
+        .timeline-item { position: relative; padding-bottom: 24px; }
+        .timeline-item::before { content: ''; position: absolute; left: -28px; top: 4px; width: 12px; height: 12px; background: var(--ripple-blue); border-radius: 50%; }
+        .timeline-date { font-size: 12px; color: var(--ripple-cyan); margin-bottom: 4px; }
+        .timeline-content h4 { font-size: 16px; margin-bottom: 4px; }
+        .timeline-content p { font-size: 14px; color: var(--text-secondary); }
+        .cta-button { display: inline-flex; align-items: center; gap: 8px; padding: 16px 32px; background: var(--gradient-primary); color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer; text-decoration: none; margin-top: 16px; }
+        .cta-button:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0, 133, 255, 0.4); }
+        .stats-row { display: flex; gap: 16px; flex-wrap: wrap; margin: 24px 0; }
+        .stat-mini { flex: 1; min-width: 120px; background: var(--ripple-darker); border-radius: 8px; padding: 16px; text-align: center; }
+        .stat-mini-value { font-size: 24px; font-weight: 700; color: var(--ripple-cyan); }
+        .stat-mini-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; margin-top: 4px; }
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: var(--ripple-darker); }
+        ::-webkit-scrollbar-thumb { background: var(--glass-border); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--ripple-blue); }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo-section">
+                    <div class="logo-placeholder">CA</div>
+                    <div class="brand-info">
+                        <h1>Ctrl Alt Property</h1>
+                        <span class="tagline">Dubai Real Estate Tokenization</span>
+                    </div>
+                </div>
+                <div class="badges">
+                    <span class="badge badge-xrpl">✦ XRPL</span>
+                    <span class="badge badge-jurisdiction">🇦🇪 UAE (Dubai)</span>
+                    <span class="badge badge-property">🏢 Property</span>
+                    <span class="badge badge-asset">Tangible Asset</span>
+                </div>
+            </div>
+        </div>
+    </header>
+    <main class="container">
+        <nav class="nav-back"><a href="../index.html">← Back to XRPL RWA Partners Index</a></nav>
+        <section class="hero">
+            <h2>Dubai Real Estate Tokenization</h2>
+            <p class="subtitle">The first institutional-grade property tokenization platform on XRP Ledger, partnered with Dubai Land Department</p>
+        </section>
+        <section class="section glass-card">
+            <h3 class="card-title"><span class="icon">📋</span>Executive Summary</h3>
+            <div class="summary-text">
+                <p><strong>Ctrl Alt Property</strong> represents a landmark advancement in real estate investment infrastructure, bringing the world's most sought-after property market—Dubai—onto the blockchain. Through a strategic partnership with the <strong>Dubai Land Department (DLD)</strong>, the platform enables fractional ownership of premium Dubai real estate, democratizing access to one of the global property market's strongest performers. This initiative marks the first time a sovereign real estate registry has directly integrated with blockchain infrastructure, establishing a new standard for tokenized property ownership in the Middle East and beyond.</p>
+                <p>The Dubai real estate market has demonstrated remarkable resilience and growth, with transaction volumes exceeding AED 500 billion annually. The city's strategic positioning as a global business hub, combined with its investor-friendly visa programs and tax-neutral environment, continues to attract international capital. Ctrl Alt's tokenization platform addresses long-standing barriers to entry, enabling investors to acquire property fractions starting from just <strong>AED 2,000 (approximately $545 USD)</strong>, a fraction of the traditional minimum investment typically required in Dubai's premium property segment.</p>
+                <p>The platform leverages the <strong>XRP Ledger (XRPL)</strong> for its proven infrastructure, offering near-instant settlement, minimal transaction costs, and enterprise-grade security. Each property token represents fractional ownership of underlying real estate assets, with ownership rights recorded on-chain and verified through the DLD partnership. This creates an unprecedented level of transparency and liquidity in what has traditionally been an illiquid, high-capital-entry market. The pilot phase focuses on residential properties in prime Dubai locations, with expansion planned for commercial real estate and retail distribution channels.</p>
+                <div class="highlight-box">
+                    <h4>Investment Thesis</h4>
+                    <p>Ctrl Alt Property offers investors exposure to Dubai's premium real estate market through a regulated, transparent, and fractionalized structure. The DLD partnership provides governmental validation of ownership, while XRPL technology ensures efficient settlement and transferability—creating a unique value proposition for both retail and institutional investors seeking exposure to one of the world's fastest-growing property markets.</p>
+                </div>
+            </div>
+        </section>
+        <section class="section glass-card">
+            <h3 class="card-title"><span class="icon">📊</span>Key Investment Metrics</h3>
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-label">Minimum Investment</div>
+                    <div class="metric-value">AED 2,000</div>
+                    <div class="metric-sub">~$545 USD at pegged rate</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Target Annual Return</div>
+                    <div class="metric-value success">6-10%</div>
+                    <div class="metric-sub">Rental yield + capital appreciation</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Liquidity Profile</div>
+                    <div class="metric-value info">Medium</div>
+                    <div class="metric-sub">Secondary market via XRPL DEX</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Permission Level</div>
+                    <div class="metric-value">95%</div>
+                    <div class="metric-sub">High - Broad Retail Access</div>
+                </div>
+            </div>
+            <div class="permission-gauge" style="margin-top: 32px;">
+                <div class="metric-label">Permissioning Gauge</div>
+                <div class="gauge-container"><div class="gauge-fill" style="width: 95%;"></div></div>
+                <div class="gauge-labels"><span>Public</span><span>Accredited</span><span>Qualified Purchaser</span></div>
+                <div class="gauge-value">95% - High Permissioning</div>
+            </div>
+            <div class="detailed-metrics">
+                <div class="detail-item">
+                    <h4>Investor Eligibility</h4>
+                    <p>Broad Retail (VARA/DLD KYC Compliant) - Open to verified investors through standard KYC procedures</p>
+                </div>
+                <div class="detail-item">
+                    <h4>Fee Structure (Estimated)</h4>
+                    <p>1-2% annual management fee + 0.5% transaction fee on buy/sell</p>
+                </div>
+                <div class="detail-item">
+                    <h4>Asset Class</h4>
+                    <p>Premium Dubai Real Estate (Residential initially, Commercial expansion planned)</p>
+                </div>
+                <div class="detail-item">
+                    <h4>Regulatory Framework</h4>
+                    <p>VARA (Virtual Assets Regulatory Authority) + Dubai Land Department oversight</p>
+                </div>
+            </div>
+        </section>
+        <section class="section">
+            <h2 class="section-title">Asset Deep-Dive</h2>
+            <div class="glass-card asset-deepdive">
+                <h3>Dubai Real Estate Market Analysis</h3>
+                <div class="market-stats">
+                    <div class="stat-box"><div class="stat-value">AED 500B+</div><div class="stat-label">Annual Transaction Volume</div><div class="stat-change positive">↑ 15% YoY</div></div>
+                    <div class="stat-box"><div class="stat-value">180,000+</div><div class="stat-label">Properties Sold Annually</div><div class="stat-change positive">↑ 25% YoY</div></div>
+                    <div class="stat-box"><div class="stat-value">8-12%</div><div class="stat-label">Average Rental Yield</div><div class="stat-change positive">↑ Stable</div></div>
+                    <div class="stat-box"><div class="stat-value">$1.5T+</div><div class="stat-label">Market Cap Projection 2030</div><div class="stat-change positive">↑ Growth</div></div>
+                </div>
+                <p style="margin: 24px 0; font-size: 15px; color: var(--text-secondary); line-height: 1.8;">Dubai's real estate market stands as one of the most dynamic and resilient property markets globally. The city's strategic vision as a global business and tourism hub, combined with its investor-friendly policies, has created sustained demand across residential, commercial, and hospitality segments. The market has recovered strongly from previous cycles, with 2023-2024 recording unprecedented transaction volumes and price appreciation across prime locations including Downtown Dubai, Palm Jumeirah, Dubai Marina, and Business Bay.</p>
+                <p style="margin: 24px 0; font-size: 15px; color: var(--text-secondary); line-height: 1.8;">Key market drivers include the UAE's Golden Visa program attracting high-net-worth individuals, the expansion of free zones driving corporate relocations, and major event pipelines including Expo-related developments. The Dubai government's proactive approach to real estate regulation, including the establishment of the Real Estate Regulatory Agency (RERA), has enhanced market transparency and investor confidence. Rental yields in prime locations consistently outperform global benchmarks, with average yields ranging from 6% to 12% depending on location and property type.</p>
+                <h3>Dubai Land Department (DLD) Partnership Significance</h3>
+                <ul class="feature-list">
+                    <li><strong>Government-Backed Validation:</strong> Direct integration with Dubai's official property registry ensures all tokenized ownership records are recognized by the sovereign authority</li>
+                    <li><strong>Legal Certainty:</strong> Property titles tokenized through the platform carry the same legal weight as traditional title deeds registered with DLD</li>
+                    <li><strong>Transferability:</strong> On-chain transfers can be executed with DLD recognition, enabling seamless secondary market trading</li>
+                    <li><strong>Regulatory Alignment:</strong> Partnership ensures compliance with all DLD regulations, including escrow requirements and investor protection rules</li>
+                    <li><strong>Market Data Access:</strong> Real-time property valuation data integrated from DLD systems for accurate pricing</li>
+                </ul>
+                <div class="highlight-box">
+                    <h4>DLD Integration Architecture</h4>
+                    <p>The Ctrl Alt platform interfaces directly with DLD's digital infrastructure, creating a bridge between blockchain-based token records and the official land registry. This architectural integration ensures that when a property token is transferred on XRPL, corresponding records are updated in the DLD system, maintaining legal consistency between on-chain and off-chain ownership.</p>
+                </div>
+                <h3>Fractional Ownership Mechanics</h3>
+                <p style="margin: 16px 0; font-size: 15px; color: var(--text-secondary); line-height: 1.8;">Fractional ownership through tokenization transforms how investors can participate in premium real estate. Each property is divided into tradable tokens, with each token representing a proportional share of the underlying asset. This structure enables unprecedented liquidity in traditionally illiquid real estate markets.</p>
+                <div class="key-points">
+                    <div class="key-point"><h4>Pro-Rata Ownership</h4><p>Token holders maintain proportional ownership rights including rental income distribution, voting on major decisions, and capital appreciation benefits</p></div>
+                    <div class="key-point"><h4>Automatic Income Distribution</h4><p>Rental income is collected by the platform and distributed proportionally to token holders on a monthly or quarterly basis, directly to their wallets</p></div>
+                    <div class="key-point"><h4>Governance Rights</h4><p>Major property decisions (sale, refinancing, major renovations) require token holder approval through on-chain voting mechanisms</p></div>
+                    <div class="key-point"><h4>Capital Events</h4><p>When properties are sold, proceeds are distributed to token holders proportional to their holdings, with all transactions recorded on XRPL</p></div>
+                </div>
+                <h3>VARA Regulatory Framework</h3>
+                <p style="margin: 16px 0; font-size: 15px; color: var(--text-secondary); line-height: 1.8;">The Virtual Assets Regulatory Authority (VARA) established in Dubai governs all virtual asset activities including tokenized real estate. The regulatory framework ensures investor protection while fostering innovation in the digital asset space.</p>
+                <div class="stats-row">
+                    <div class="stat-mini"><div class="stat-mini-value">VARA</div><div class="stat-mini-label">Regulatory Body</div></div>
+                    <div class="stat-mini"><div class="stat-mini-value">2023</div><div class="stat-mini-label">Established</div></div>
+                    <div class="stat-mini"><div class="stat-mini-value">Mandatory</div><div class="stat-mini-label">Licensing</div></div>
+                    <div class="stat-mini"><div class="stat-mini-value">Full</div><div class="stat-mini-label">Investor Protection</div></div>
+                </div>
+                <ul class="feature-list">
+                    <li><strong>Licensing Requirements:</strong> All tokenization platforms must obtain VARA licensure demonstrating operational capital, governance structures, and compliance frameworks</li>
+                    <li><strong>Investor Protection:</strong> Mandatory segregation of client assets in escrow accounts, regular audits, and transparent disclosure requirements</li>
+                    <li><strong>AML/KYC Compliance:</strong> Full anti-money laundering and know-your-customer procedures required for all investors</li>
+                    <li><strong

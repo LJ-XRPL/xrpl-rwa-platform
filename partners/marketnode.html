@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MarketNode | XRPL RWA Partner Deep Dive</title>
+    <style>
+        :root { --ripple-blue: #0085FF; --ripple-cyan: #00B7FF; --ripple-dark: #1A1A2E; --ripple-darker: #0F0F1A; --glass-bg: rgba(255, 255, 255, 0.03); --glass-border: rgba(255, 255, 255, 0.08); --text-primary: #FFFFFF; --text-secondary: rgba(255, 255, 255, 0.7); --text-muted: rgba(255, 255, 255, 0.5); --success: #00D68F; --warning: #FFAA00; --danger: #FF3D71; --gradient-primary: linear-gradient(135deg, var(--ripple-blue) 0%, var(--ripple-cyan) 100%); }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--ripple-darker); color: var(--text-primary); line-height: 1.6; min-height: 100vh; }
+        .bg-pattern { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(ellipse at 20% 20%, rgba(0, 133, 255, 0.15) 0%, transparent 50%), radial-gradient(ellipse at 80% 80%, rgba(0, 183, 255, 0.1) 0%, transparent 50%), repeating-linear-gradient(0deg, transparent, transparent 100px, rgba(0, 133, 255, 0.02) 100px, rgba(0, 133, 255, 0.02) 101px), repeating-linear-gradient(90deg, transparent, transparent 100px, rgba(0, 133, 255, 0.02) 100px, rgba(0, 133, 255, 0.02) 101px); pointer-events: none; z-index: 0; }
+        .container { max-width: 1400px; margin: 0 auto; padding: 0 24px; position: relative; z-index: 1; }
+        nav { background: rgba(26, 26, 46, 0.8); backdrop-filter: blur(20px); border-bottom: 1px solid var(--glass-border); position: sticky; top: 0; z-index: 100; }
+        .nav-content { display: flex; justify-content: space-between; align-items: center; padding: 16px 0; }
+        .nav-logo { display: flex; align-items: center; gap: 12px; text-decoration: none; color: var(--text-primary); }
+        .nav-logo-icon { width: 40px; height: 40px; background: var(--gradient-primary); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 18px; }
+        .nav-logo-text { font-weight: 600; font-size: 18px; }
+        .nav-links { display: flex; gap: 32px; list-style: none; }
+        .nav-links a { color: var(--text-secondary); text-decoration: none; font-size: 14px; transition: color 0.2s; }
+        .nav-links a:hover { color: var(--ripple-cyan); }
+        .header { padding: 80px 0 60px; text-align: center; }
+        .xrpl-badge { display: inline-flex; align-items: center; gap: 8px; background: rgba(0, 133, 255, 0.15); border: 1px solid rgba(0, 133, 255, 0.3); padding: 8px 16px; border-radius: 100px; font-size: 12px; font-weight: 600; color: var(--ripple-cyan); margin-bottom: 24px; }
+        .xrpl-badge::before { content: ''; width: 8px; height: 8px; background: var(--ripple-cyan); border-radius: 50%; animation: pulse 2s infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        .partner-title { font-size: 56px; font-weight: 700; margin-bottom: 16px; background: linear-gradient(135deg, #FFFFFF 0%, rgba(255,255,255,0.7) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .partner-meta { display: flex; justify-content: center; gap: 16px; flex-wrap: wrap; margin-bottom: 24px; }
+        .meta-tag { background: var(--glass-bg); border: 1px solid var(--glass-border); padding: 8px 16px; border-radius: 8px; font-size: 14px; color: var(--text-secondary); }
+        .meta-tag strong { color: var(--text-primary); margin-right: 6px; }
+        .partner-subtitle { font-size: 20px; color: var(--text-secondary); max-width: 800px; margin: 0 auto; }
+        .glass-card { background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 20px; padding: 32px; backdrop-filter: blur(20px); margin-bottom: 32px; }
+        .section-title { font-size: 28px; font-weight: 700; margin-bottom: 24px; display: flex; align-items: center; gap: 12px; }
+        .section-title::before { content: ''; width: 4px; height: 28px; background: var(--gradient-primary); border-radius: 2px; }
+        .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 20px; }
+        .metric-item { background: rgba(0, 0, 0, 0.2); border-radius: 12px; padding: 20px; text-align: center; }
+        .metric-value { font-size: 28px; font-weight: 700; color: var(--ripple-cyan); margin-bottom: 8px; }
+        .metric-label { font-size: 12px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+        .executive-summary p { font-size: 16px; color: var(--text-secondary); margin-bottom: 20px; line-height: 1.8; }
+        .executive-summary p:last-child { margin-bottom: 0; }
+        .deep-dive-content { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; }
+        @media (max-width: 1024px) { .deep-dive-content { grid-template-columns: 1fr; } }
+        .content-block h3 { font-size: 20px; font-weight: 600; margin-bottom: 16px; color: var(--text-primary); }
+        .content-block p, .content-block li { font-size: 15px; color: var(--text-secondary); line-height: 1.7; margin-bottom: 12px; }
+        .content-block ul { list-style: none; padding-left: 0; }
+        .content-block ul li { padding-left: 24px; position: relative; }
+        .content-block ul li::before { content: '→'; position: absolute; left: 0; color: var(--ripple-cyan); }
+        .data-table { width: 100%; border-collapse: collapse; margin-top: 16px; }
+        .data-table th, .data-table td { padding: 12px 16px; text-align: left; border-bottom: 1px solid var(--glass-border); }
+        .data-table th { font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); font-weight: 600; }
+        .data-table td { font-size: 14px; color: var(--text-secondary); }
+        .data-table tr:hover td { background: rgba(255, 255, 255, 0.02); }
+        .risk-matrix { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
+        .risk-item { background: rgba(0, 0, 0, 0.2); border-radius: 12px; padding: 24px; border-left: 4px solid var(--warning); }
+        .risk-item.high { border-left-color: var(--danger); }
+        .risk-item.medium { border-left-color: var(--warning); }
+        .risk-item.low { border-left-color: var(--success); }
+        .risk-title { font-size: 16px; font-weight: 600; margin-bottom: 8px; color: var(--text-primary); }
+        .risk-description { font-size: 14px; color: var(--text-secondary); line-height: 1.6; }
+        .architecture-flow { display: flex; flex-direction: column; gap: 16px; }
+        .flow-step { display: flex; align-items: center; gap: 16px; background: rgba(0, 0, 0, 0.2); padding: 20px; border-radius: 12px; position: relative; }
+        .flow-step:not(:last-child)::after { content: ''; position: absolute; left: 50%; bottom: -16px; width: 2px; height: 16px; background: var(--ripple-blue); transform: translateX(-50%); }
+        .flow-number { width: 40px; height: 40px; background: var(--gradient-primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 16px; flex-shrink: 0; }
+        .flow-content h4 { font-size: 16px; font-weight: 600; margin-bottom: 4px; color: var(--text-primary); }
+        .flow-content p { font-size: 14px; color: var(--text-secondary); }
+        .stat-card { background: rgba(0, 0, 0, 0.2); border-radius: 16px; padding: 28px; text-align: center; }
+        .stat-value { font-size: 36px; font-weight: 700; background: var(--gradient-primary); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 8px; }
+        .stat-label { font-size: 14px; color: var(--text-muted); }
+        .regulatory-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; }
+        .regulatory-card { background: rgba(0, 0, 0, 0.2); border-radius: 16px; padding: 28px; border: 1px solid var(--glass-border); }
+        .regulatory-card h4 { font-size: 18px; font-weight: 600; margin-bottom: 16px; color: var(--ripple-cyan); }
+        .regulatory-card ul { list-style: none; }
+        .regulatory-card li { padding: 8px 0; border-bottom: 1px solid var(--glass-border); font-size: 14px; color: var(--text-secondary); display: flex; justify-content: space-between; }
+        .regulatory-card li:last-child { border-bottom: none; }
+        .regulatory-card li span { color: var(--text-primary); font-weight: 500; }
+        .cta-section { text-align: center; padding: 60px 0; }
+        .cta-button { display: inline-flex; align-items: center; gap: 8px; background: var(--gradient-primary); color: white; padding: 16px 32px; border-radius: 12px; font-size: 16px; font-weight: 600; text-decoration: none; transition: transform 0.2s, box-shadow 0.2s; }
+        .cta-button:hover { transform: translateY(-2px); box-shadow: 0 10px 40px rgba(0, 133, 255, 0.3); }
+        footer { background: rgba(0, 0, 0, 0.3); border-top: 1px solid var(--glass-border); padding: 40px 0; margin-top: 80px; text-align: center; }
+        .footer-content { color: var(--text-muted); font-size: 14px; }
+        .footer-content a { color: var(--ripple-cyan); text-decoration: none; }
+        .two-column { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; }
+        @media (max-width: 900px) { .two-column { grid-template-columns: 1fr; } }
+        .highlight-box { background: linear-gradient(135deg, rgba(0, 133, 255, 0.1) 0%, rgba(0, 183, 255, 0.05) 100%); border: 1px solid rgba(0, 133, 255, 0.2); border-radius: 16px; padding: 24px; margin: 24px 0; }
+        .highlight-box h4 { font-size: 16px; font-weight: 600; color: var(--ripple-cyan); margin-bottom: 12px; }
+        .icon-list { list-style: none; padding: 0; }
+        .icon-list li { padding: 10px 0; padding-left: 32px; position: relative; border-bottom: 1px solid var(--glass-border); color: var(--text-secondary); font-size: 14px; }
+        .icon-list li:last-child { border-bottom: none; }
+        .icon-list li::before { content: '✓'; position: absolute; left: 0; color: var(--success); font-weight: bold; }
+        .market-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; }
+    </style>
+</head>
+<body>
+    <div class="bg-pattern"></div>
+    <nav>
+        <div class="container">
+            <div class="nav-content">
+                <a href="../index.html" class="nav-logo"><div class="nav-logo-icon">XR</div><span class="nav-logo-text">XRPL RWA Platform</span></a>
+                <ul class="nav-links">
+                    <li><a href="../index.html">Home</a></li>
+                    <li><a href="../index.html#partners">Partners</a></li>
+                    <li><a href="../index.html#about">About</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <header class="header">
+        <div class="container">
+            <div class="xrpl-badge">POWERED BY XRPL</div>
+            <h1 class="partner-title">MarketNode</h1>
+            <div class="partner-meta">
+                <span class="meta-tag"><strong>Asset Class:</strong> Money Market Fund (MMF)</span>
+                <span class="meta-tag"><strong>Jurisdiction:</strong> APAC (Singapore/UAE)</span>
+                <span class="meta-tag"><strong>Segment:</strong> Institutional</span>
+            </div>
+            <p class="partner-subtitle">Euroclear, Temasek, SGX & HSBC-backed tokenization platform for institutional fixed-income securities</p>
+        </div>
+    </header>
+    <main class="container">
+        <section class="glass-card executive-summary">
+            <h2 class="section-title">Executive Summary</h2>
+            <p>MarketNode represents the most sophisticated institutional-grade tokenization infrastructure in the APAC region, backed by a consortium of financial titans including Euroclear, Temasek, Singapore Exchange (SGX), and HSBC. This partnership marks a pivotal moment in the evolution of traditional capital markets, bringing centuries-old institutional fixed-income trading into the digital age through native XRPL integration. The platform's inaugural product—a tokenized Money Market Fund (MMF) issued by Maybank, Malaysia's largest bank—demonstrates the practical application of blockchain technology to solve longstanding inefficiencies in short-term liquidity instruments. The consortium's combined assets under management exceed $500 billion, providing unparalleled credibility and distribution reach across Southeast Asia's most important financial markets.</p>
+            <p>The investment thesis centers on capturing the massive APAC fixed-income market, valued at over $20 trillion in outstanding debt, while addressing critical pain points in traditional bond and money market fund distribution. By leveraging XRPL's unique features including instant settlement, minimal transaction costs (typically under $0.001 per transaction), and native compliance hooks, MarketNode enables institutional investors to access short-term liquidity instruments with unprecedented efficiency. The involvement of BNP Paribas Securities Services as custodian adds institutional-grade trust and regulatory compliance, positioning the platform for rapid adoption among licensed banks and financial institutions across the region. The Singapore-Mauritius双边 pathway further enhances cross-border distribution capabilities.</p>
+            <p>From an investor perspective, MarketNode's tokenized MMF offers a compelling combination of yield enhancement, operational efficiency, and regulatory certainty. The product provides 24/7 liquidity (within fund terms), transparent on-chain holdings verification, and fractional ownership capabilities that were previously unavailable in traditional MMF structures. The backing by Tier-1 financial institutions significantly de-risks the proposition relative to other RWA tokenization attempts, making this one of the most institutional-ready offerings in the XRPL ecosystem. The initial product targets yields of 4.0-4.5% USD equivalent, competitive with traditional USD money market funds while offering superior accessibility and transparency.</p>
+            <p>The strategic significance of this partnership extends beyond the initial MMF product. MarketNode's infrastructure is designed to support the full spectrum of fixed-income securities including government bonds, corporate debt, structured products, and eventually, cross-border bond issuance. This positions XRPL as the preferred settlement layer for APAC capital markets, creating substantial network effects as more issuers and investors onboard to the platform. The partnership leverages Singapore's position as a leading international financial center and Dubai's emergence as a tokenization hub, creating a pan-APAC distribution network that can serve investors across the region.</p>
+        </section>
+        <section class="glass-card">
+            <h2 class="section-title">Key Metrics & Investment Parameters</h2>
+            <div class="metrics-grid">
+                <div class="metric-item"><div class="metric-value">$20T+</div><div class="metric-label">APAC Bond Market TAM</div></div>
+                <div class="metric-item"><div class="metric-value">4.5%+</div><div class="metric-label">MMF Yield Estimate</div></div>
+                <div class="metric-item"><div class="metric-value">T+0</div><div class="metric-label">Settlement (XRPL)</div></div>
+                <div class="metric-item"><div class="metric-value">$0.0002</div><div class="metric-label">Transaction Cost</div></div>
+                <div class="metric-item"><div class="metric-value">85%</div><div class="metric-label">Permission Level</div></div>
+                <div class="metric-item"><div class="metric-value">Institutional</div><div class="metric-label">Investor Segment</div></div>
+                <div class="metric-item"><div class="metric-value">24/7</div><div class="metric-label">Trading Window</div></div>
+                <div class="metric-item"><div class="metric-value">Tier-1</div><div class="metric-label">Backing Quality</div></div>
+            </div>
+            <div class="highlight-box" style="margin-top: 32px;">
+                <h4>📋 Investment Eligibility Requirements</h4>
+                <ul class="icon-list">
+                    <li>Licensed Banks and Financial Institutions only (per regulatory framework)</li>
+                    <li>Minimum investment determined by Maybank MMF terms and conditions</li>
+                    <li>KYC/AML compliance required per Singapore and Malaysia regulations</li>
+                    <li>Accredited investor verification for non-bank institutional investors</li>
+                    <li>Cross-border distribution subject to local regulatory approval in each jurisdiction</li>
+                    <li>Whitelisted wallet addresses required for token transfers</li>
+                </ul>
+            </div>
+        </section>
+        <section class="glass-card">
+            <h2 class="section-title">Asset Deep Dive: Institutional Fixed Income Tokenization</h2>
+            <div class="deep-dive-content">
+                <div class="content-block">
+                    <h3>Backing & Institutional Foundation</h3>
+                    <p>MarketNode's value proposition rests on an unparalleled coalition of financial infrastructure providers, each contributing critical capabilities to the tokenization ecosystem. This isn't a startup experiment—it's the modernization of APAC capital markets by the institutions that already operate them with proven track records spanning decades.</p>
+                    <ul>
+                        <li><strong>Euroclear:</strong> The world's largest securities depositary, handling over $40 trillion in assets annually. Euroclear provides the bridge between traditional CSD (Central Securities Depository) infrastructure and blockchain-based tokenization, ensuring regulatory compliance and interoperability with existing market infrastructure.</li>
+                        <li><strong>Temasek:</strong> Singapore's $300B+ sovereign wealth fund provides strategic endorsement and market access to Southeast Asia's most sophisticated institutional investors. Temasek's involvement signals long-term commitment and regulatory credibility at the highest levels of government and industry.</li>
+                        <li><strong>Singapore Exchange (SGX):</strong> As the primary equity and derivatives marketplace for Singapore and the broader region, SGX contributes listing expertise, market infrastructure, and access to the extensive network of institutional participants who trade on the exchange daily.</li>
+                        <li><strong>HSBC:</strong> One of the world's largest banking and financial services institutions, providing banking relationships, custody services, and distribution reach across 60+ countries in Asia, Europe, and the Americas with deep roots in Asian markets.</li>
+                        <li><strong>Maybank:</strong> Malaysia's largest bank by assets (over $100 billion), issuer of the inaugural tokenized MMF product. Maybank's participation provides real-world utility and yield generation backed by one of Southeast Asia's most respected financial institutions.</li>
+                        <li><strong>BNP Paribas Securities Services:</strong> Global custodian with $13 trillion+ in assets under custody, providing institutional-grade safekeeping, settlement, and reporting capabilities that meet the most demanding institutional standards globally.</li>
+                    </ul>
+                    <h3 style="margin-top: 32px;">Maybank MMF Product Structure</h3>
+                    <p>The flagship product—a tokenized Money Market Fund issued by Maybank—represents the first institutional-grade MMF available on a public blockchain. This is not an experimental DeFi protocol but a regulated investment product with full institutional oversight and regulatory approval from Malaysian authorities.</p>
+                    <ul>
+                        <li><strong>Underlying Assets:</strong> Short-term, high-quality money market instruments including Malaysian Government Securities, Bankers' Acceptances, and short-term corporate paper rated A-1/P-1 or equivalent by recognized rating agencies like Moody's and S&P.</li>
+                        <li><strong>Yield Generation:</strong> Target returns in the 4.0-4.5% range (USD equivalent), competitive with traditional USD money market funds but with enhanced accessibility and same-day settlement capabilities across the region.</li>
+                        <li><strong>Token Structure:</strong> Each token represents a fractional ownership interest in the underlying MMF, with on-chain verification of holdings and NAV through oracle feeds and distributed ledger transparency for all stakeholders.</li>
+                        <li><strong>Redemption:</strong> Within fund terms (typically T+1), with blockchain enabling faster settlement finality than traditional fund structures. Redemption requests processed through the issuer with full compliance checks.</li>
+                    </ul>
+                </div>
+                <div class="content-block">
+                    <h3>APAC Fixed Income Market Opportunity</h3>
+                    <p>The APAC fixed-income market represents the largest and fastest-growing bond market globally, presenting substantial opportunity for tokenization to improve efficiency and access for institutional investors seeking yield in the region.</p>
+                    <table class="data-table">
+                        <thead><tr><th>Market</th><th>Outstanding Debt</th><th>Annual Issuance</th></tr></thead>
+                        <tbody>
+                            <tr><td>China</td><td>$18.4 Trillion</td><td>$5.2 Trillion+</td></tr>
+                            <tr><td>Japan</td><td>$12.8 Trillion</td><td>$1.1 Trillion+</td></tr>
+                            <tr><td>South Korea</td><td>$2.4 Trillion</td><td>$450 Billion</td></tr>
+                            <tr><td>India</td><td>$2.1 Trillion</td><td>$350 Billion</td></tr>
+                            <tr><td>ASEAN</td><td>$2.0 Trillion</td><td>$400 Billion</td></tr>
+                            <tr><td>Australia/NZ</td><td>$1.8 Trillion</td><td>$300 Billion</td></tr>
+                        </tbody>
+                    </table>
+                    <h3 style="margin-top: 32px;">Tokenization Benefits by Stakeholder</h3>
+                    <div class="highlight-box">
+                        <h4>For Issuers (Maybank & Future Issuers)</h4>
+                        <ul class="icon-list">
+                            <li>Lower distribution costs through programmatic investor onboarding</li>
+                            <li>Real-time investor base visibility and analytics</li>
+                            <li>Expanded investor reach beyond traditional bank networks</li>
+                            <li>Operational efficiency in coupon payments and capital movements</li>
+                        </ul>
+                    </div>
+                    <div class="highlight-box">
+                        <h4>For Institutional Investors</h4>
+                        <ul class="icon-list">
+                            <li>24/7 trading capability vs. traditional T+1 fund settlement</li>
+                            <li>Fractional ownership enabling precise position sizing</li>
+                            <li>On-chain transparency of underlying holdings</li>
+                            <li>Reduced custody and administration costs</li>
+                            <li>Programmatic compliance verification</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <section class="glass-card">
+            <h2 class="section-title">Technical Architecture: XRPL Integration</h2>
+            <p style="color: var(--text-secondary); margin-bottom: 32px;">MarketNode's technical architecture leverages XRPL's unique capabilities to deliver institutional-grade tokenization with regulatory compliance, security, and operational efficiency at its core. The architecture follows a "token-and-custody" model that bridges traditional finance with blockchain innovation.</p>
+            <div class="architecture-flow">
+                <div class="flow-step">
+                    <div class="flow-number">1</div>
+                    <div class="flow-content">
+                        <h4>Fund Setup & Token Creation</h4>
+                        <p>Maybank establishes the MMF with regulatory approval from Bank Negara Malaysia and Securities Commission Malaysia. MarketNode creates the tokenized representation on XRPL using the Issued Currency mechanism. Each token is denominated with high precision (up to 16 decimal places) enabling fractional ownership down to minute fractions of a cent.</p>
+                    </div>
+                </div>
+                <div class="flow-step">
+                    <div class="flow-number">2</div>
+                    <div class="flow-content">
+                        <h4>Custody & Asset Servicing (BNP Paribas)</h4>
+                        <p>BNP Paribas Securities Services acts as primary custodian, holding the underlying MMF assets off-chain in segregated accounts. They maintain the official share register and provide daily NAV calculations. This "token-and-custody" model ensures regulatory compliance while enabling blockchain benefits.</p>
+                    </div>
+                </div>
+                <div class="flow-step">
+                    <div class="flow-number">3</div>
+                    <div class="flow-content">
+                        <h4>Investor Onboarding & KYC</h4>
+                        <p>Institutional investors complete regulated KYC/AML procedures through their existing banking relationships. MarketNode implements permissioned minting—only verified institutional wallets can receive newly issued tokens. This prevents retail speculation while maintaining accessibility for legitimate institutional participants.</p>
+                    </div>
+                </div>
+                <div class="flow-step">
+                    <div class="flow-number">4</div>
+                    <div class="flow-content">
+                        <h4>Primary Issuance & Redemption</h4>
+                        <p>Investors purchase tokens directly from the issuer (Maybank) via traditional banking channels, with tokens minted on XRPL upon settlement. Redemptions work in reverse—tokens are burned, and funds are settled through traditional banking. This hybrid model ensures regulatory certainty while gaining blockchain efficiency.</p>
+                    </div>
+                </div>
+                <div class="flow-step">
+                    <div class="flow-number">5</div>
+                    <div class="flow-content">
+                        <h4>Secondary Trading on XRPL</h4>
+                        <p>Once acquired, tokens can be transferred between permissioned institutional wallets on the XRPL DEX. The distributed ledger provides instant settlement (4-second finality), complete transaction history, and programmatic compliance checks. Trading is restricted to the permissioned investor pool.</p>
+                    </div>
+                </div>
+                <div class="flow-step">
+                    <div class="flow-number">6</div>
+                    <div class="flow-content">
+                        <h4>NAV Reporting & Transparency</h4>
+                        <p>MarketNode publishes daily NAV updates on-chain via IPFS or oracle services. Investors can verify their theoretical portfolio value at any time. BNP Paribas provides monthly statements and annual audit reports, bridging traditional finance accountability with blockchain transparency.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="two-column" style="margin-top: 40px;">
+                <div class="content-block">
+                    <h3>XRPL Technical Advantages</h3>
+                    <ul>
+                        <li><strong>Instant Settlement:</strong> 4-second average ledger finality vs. T+2+ in traditional fixed-income markets</li>
+                        <li><strong>Minimal Fees:</strong> Transaction costs of ~$0.0002 enable efficient small-ticket transactions</li>
+                        <li><strong>Native Compliance:</strong> CheckCashCredit, Escrow, and AMM features built into protocol</li>
+                        <li><strong>Cross-Currency:</strong> Native FX through XRP bridge for regional currency denominations</li>
+                        <li><strong>Scalability:</strong> 1,500+ TPS capacity handles institutional trading volumes</li>
+                        <li><strong>Proven Stability:</strong> 12+ years of continuous operation without network failure</li>
+                        <li><strong>Energy Efficient:</strong> Minimal energy consumption compared to proof-of-work blockchains</li>
+                    </ul>
+                </div>
+                <div class="content-block">
+                    <h3>Security & Risk Controls</h3>
+                    <ul>
+                        <li><strong>Multi-Sig Authorization:</strong> All token minting requires multiple party approvals</li>
+                        <li><strong>Custodial Isolation:</strong> Underlying assets held in segregated custodial accounts</li>
+                        <li><strong>Audit Trail:</strong> Complete on-chain history for regulatory reporting and compliance</li>
+                        <li><strong>Permissioned Transfers:</strong> Only whitelisted addresses can transact in the ecosystem</li>
+                        <li><strong>Oracle Verification:</strong> Off-chain NAV feeds validated by multiple independent sources</li>
+                        <li><strong>Insurance Coverage:</strong> Custodian maintains appropriate E&O and fidelity insurance</li>
+                        <li><strong>Regulatory Oversight:</strong> Subject to Bank Negara Malaysia, Securities Commission, and MAS supervision</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+        <section class="glass-card">
+            <h2 class="section-title">Risk Factors & Mitigation Strategies</h2>
+            <div class="risk-matrix">
+                <div class="risk-item high">
+                    <div class="risk-title">Counterparty Risk</div>
+                    <div class="risk-description"><strong>Risk:</strong> Default or insolvency of the MMF issuer (Maybank) or custodian (BNP Paribas) could impact token holders.<br><br><strong>Mitigation:</strong> Both institutions are among the world's largest and most regulated. Maybank is rated A- by S&P; BNP Paribas has $13T+ AUC. Assets are segregated per regulatory requirements. Both institutions have existed for over 100 years.</div>
+                </div>
+                <div class="risk-item medium">
+                    <div class="risk-title">Regulatory Risk</div>
+                    <div class="risk-description"><strong>Risk:</strong> Changes in Malaysian, Singaporean, or APAC regulations could impact token issuance, distribution, or trading.<br><br><strong>Mitigation:</strong> The consortium includes regulatory expertise and maintains active dialogue with Bank Negara Malaysia, Securities Commission, and MAS. Product structured to comply with existing frameworks.</div>
+                </div>
+                <div class="risk-item medium">
+                    <div class="risk-title">Liquidity Risk</div>
+                    <div class="risk-description"><strong>Risk:</strong> Tokenized MMF may have less liquidity than traditional MMF shares, especially during market stress.<br><br><strong>Mitigation:</strong> Permissioned investor pool includes major banks. XRPL DEX enables secondary trading. Issuer maintains redemption facility per fund terms providing floor liquidity.</div>
+                </div>
+                <div class="risk-item low">
+                    <div class="risk-title">Operational Risk</div>
+                    <div class="risk-description"><strong>Risk:</strong> Technology failures, smart contract bugs, or blockchain network issues could disrupt operations.<br><br><strong>Mitigation:</strong> XRPL has 12+ year operational track record. Smart contracts undergo formal verification. Disaster recovery procedures in place at all partner institutions.</div>
+                </div>
+                <div class="risk-item medium">
+                    <div class="risk-title">Market & Yield Risk</div>
+                    <div class="risk-description"><strong>Risk:</strong> MMF yields may decline due to central bank policy changes or market conditions affecting short-term interest rates.<br><br><strong>Mitigation:</strong> MMF is a short-term instrument with low duration risk. Yields follow market rates. Investors have 24/7 visibility into current yields via on-chain data.</div>
+                </div>
+                <div class="risk-item low">
+                    <div class="risk-title">Custody & Safekeeping Risk</div>
+                    <div class="risk-description"><strong>Risk:</strong> Physical or digital asset loss due to custodian negligence or security breach.<br><br><strong>Mitigation:</strong> BNP Paribas is a Tier-1 global custodian with robust controls, insurance coverage, and regulatory oversight. Assets segregated per regulations.</div>
+                </div>
+            </div>
+        </section>
+        <section class="glass-card">
+            <h2 class="section-title">Secondary Trading & Liquidity</h2>
+            <div class="deep-dive-content">
+                <div class="content-block">
+                    <h3>Trading Mechanism</h3>
+                    <p>MarketNode implements a hybrid trading model that combines the efficiency of blockchain with the liquidity depth of traditional institutional markets across the APAC region.</p>
+                    <ul>
+                        <li><strong>Permissioned DEX:</strong> All trading occurs on the XRPL decentralized exchange, but restricted to whitelisted institutional wallets ensuring compliance with applicable regulations</li>
+                        <li><strong>Instant Settlement:</strong> XRPL's 4-second ledger finality means trades settle immediately, eliminating counterparty and settlement risk entirely</li>
+                        <li><strong>Transparent Order Book:</strong> Full visibility into available liquidity enables better price discovery and execution quality for all participants</li>
+                        <li><strong>Minimum Tick Size:</strong> Precise pricing enabled by 16-decimal token granularity matching NAV precision exactly</li>
+                        <li><strong>Atomic Swaps:</strong> Cross-currency swaps

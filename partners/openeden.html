@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OpenEden | XRPL RWA Platform | Institutional Deep-Dive</title>
+    <style>
+        :root { --ripple-blue: #0085FF; --ripple-cyan: #00B7FF; --ripple-dark: #1A1A2E; --ripple-darker: #0F0F1A; --glass-bg: rgba(255, 255, 255, 0.05); --glass-border: rgba(255, 255, 255, 0.1); --glass-hover: rgba(255, 255, 255, 0.08); --text-primary: #FFFFFF; --text-secondary: #A0A0B0; --text-muted: #6B6B7B; --accent-green: #00D68F; --accent-yellow: #FFAA00; --accent-red: #FF4757; --gradient-primary: linear-gradient(135deg, var(--ripple-blue) 0%, var(--ripple-cyan) 100%); }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--ripple-darker); color: var(--text-primary); line-height: 1.6; min-height: 100vh; }
+        body::before { content: ''; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: radial-gradient(ellipse at 20% 20%, rgba(0, 133, 255, 0.15) 0%, transparent 50%), radial-gradient(ellipse at 80% 80%, rgba(0, 183, 255, 0.1) 0%, transparent 50%); pointer-events: none; z-index: -1; }
+        nav { background: rgba(26, 26, 46, 0.9); backdrop-filter: blur(20px); border-bottom: 1px solid var(--glass-border); padding: 1rem 2rem; position: sticky; top: 0; z-index: 1000; }
+        .nav-container { max-width: 1400px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; }
+        .nav-logo { display: flex; align-items: center; gap: 0.75rem; font-weight: 700; font-size: 1.25rem; }
+        .nav-links { display: flex; gap: 2rem; list-style: none; }
+        .nav-links a { color: var(--text-secondary); text-decoration: none; font-size: 0.9rem; transition: color 0.3s; }
+        .nav-links a:hover { color: var(--ripple-cyan); }
+        .container { max-width: 1400px; margin: 0 auto; padding: 2rem; }
+        .partner-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 3rem; padding-bottom: 2rem; border-bottom: 1px solid var(--glass-border); }
+        .partner-name { font-size: 2.5rem; font-weight: 800; background: var(--gradient-primary); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .partner-badges { display: flex; gap: 0.75rem; flex-wrap: wrap; margin-top: 0.5rem; }
+        .badge { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.4rem 0.8rem; border-radius: 20px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; }
+        .badge-xrpl { background: linear-gradient(135deg, #23292F 0%, #1A1A2E 100%); border: 1px solid #00B7FF; color: #00B7FF; }
+        .badge-asset { background: var(--glass-bg); border: 1px solid var(--glass-border); color: var(--text-secondary); }
+        .badge-jurisdiction { background: rgba(0, 214, 143, 0.1); border: 1px solid rgba(0, 214, 143, 0.3); color: var(--accent-green); }
+        .partner-meta { text-align: right; }
+        .partner-meta-label { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.25rem; }
+        .partner-meta-value { font-size: 1.1rem; color: var(--text-primary); font-weight: 600; }
+        .glass-card { background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 16px; padding: 1.5rem; backdrop-filter: blur(10px); transition: all 0.3s ease; }
+        .glass-card:hover { background: var(--glass-hover); border-color: rgba(0, 133, 255, 0.3); transform: translateY(-2px); box-shadow: 0 8px 32px rgba(0, 133, 255, 0.1); }
+        .section { margin-bottom: 3rem; }
+        .section-title { font-size: 1.5rem; font-weight: 700; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.75rem; }
+        .section-number { display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; background: var(--gradient-primary); border-radius: 8px; font-size: 0.9rem; font-weight: 700; }
+        .executive-summary p { color: var(--text-secondary); font-size: 1.05rem; line-height: 1.8; margin-bottom: 1.25rem; }
+        .executive-summary p:first-of-type::first-letter { font-size: 3rem; font-weight: 800; float: left; line-height: 1; margin-right: 0.5rem; background: var(--gradient-primary); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; }
+        .metric-item { text-align: center; padding: 1.5rem 1rem; }
+        .metric-value { font-size: 2rem; font-weight: 800; background: var(--gradient-primary); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 0.25rem; }
+        .metric-label { font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+        .metric-sublabel { font-size: 0.7rem; color: var(--text-secondary); margin-top: 0.25rem; }
+        .permission-gauge { display: flex; align-items: center; justify-content: center; gap: 1rem; margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--glass-border); }
+        .gauge-bar { flex: 1; max-width: 300px; height: 8px; background: rgba(255, 255, 255, 0.1); border-radius: 4px; overflow: hidden; }
+        .gauge-fill { height: 100%; background: var(--gradient-primary); border-radius: 4px; }
+        .gauge-label { font-size: 0.9rem; font-weight: 600; min-width: 80px; }
+        .deep-dive-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; }
+        @media (max-width: 1024px) { .deep-dive-grid { grid-template-columns: 1fr; } }
+        .deep-dive-card { padding: 2rem; }
+        .deep-dive-card h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: 1rem; color: var(--text-primary); }
+        .deep-dive-card p { color: var(--text-secondary); font-size: 0.95rem; line-height: 1.7; margin-bottom: 1rem; }
+        .deep-dive-card ul { list-style: none; padding: 0; }
+        .deep-dive-card li { color: var(--text-secondary); font-size: 0.9rem; padding: 0.5rem 0; padding-left: 1.5rem; position: relative; }
+        .deep-dive-card li::before { content: '→'; position: absolute; left: 0; color: var(--ripple-cyan); }
+        .tech-architecture { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+        @media (max-width: 1024px) { .tech-architecture { grid-template-columns: 1fr; } }
+        .tech-layer { padding: 1.5rem; }
+        .tech-layer-title { font-size: 1rem; font-weight: 700; color: var(--ripple-cyan); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; }
+        .tech-layer-title .layer-num { width: 24px; height: 24px; background: var(--glass-bg); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; color: var(--ripple-blue); }
+        .tech-features { list-style: none; }
+        .tech-features li { font-size: 0.85rem; color: var(--text-secondary); padding: 0.4rem 0; display: flex; align-items: flex-start; gap: 0.5rem; }
+        .tech-features li::before { content: '✓'; color: var(--accent-green); font-weight: bold; }
+        .risk-matrix { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; }
+        @media (max-width: 768px) { .risk-matrix { grid-template-columns: 1fr; } }
+        .risk-item { padding: 1.25rem; }
+        .risk-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; }
+        .risk-title { font-size: 0.95rem; font-weight: 600; }
+        .risk-level { font-size: 0.7rem; padding: 0.25rem 0.5rem; border-radius: 4px; font-weight: 600; text-transform: uppercase; }
+        .risk-level.low { background: rgba(0, 214, 143, 0.15); color: var(--accent-green); }
+        .risk-level.medium { background: rgba(255, 170, 0, 0.15); color: var(--accent-yellow); }
+        .risk-level.high { background: rgba(255, 71, 87, 0.15); color: var(--accent-red); }
+        .risk-description { font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6; }
+        .data-table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+        .data-table th, .data-table td { padding: 1rem; text-align: left; border-bottom: 1px solid var(--glass-border); }
+        .data-table th { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; font-weight: 600; }
+        .data-table td { font-size: 0.9rem; color: var(--text-secondary); }
+        .competitive-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; }
+        @media (max-width: 1024px) { .competitive-grid { grid-template-columns: 1fr; } }
+        .competitor-card { padding: 1.5rem; position: relative; }
+        .competitor-card.openeden { border-color: var(--ripple-blue); background: linear-gradient(135deg, rgba(0, 133, 255, 0.1) 0%, rgba(0, 183, 255, 0.05) 100%); }
+        .competitor-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+        .competitor-name { font-size: 1.1rem; font-weight: 700; }
+        .competitor-badge { font-size: 0.7rem; padding: 0.25rem 0.5rem; border-radius: 4px; background: var(--glass-bg); color: var(--text-secondary); }
+        .competitor-metrics { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem; margin-top: 1rem; }
+        .competitor-metric-label { color: var(--text-muted); font-size: 0.75rem; }
+        .competitor-metric-value { color: var(--text-primary); font-weight: 600; font-size: 0.9rem; }
+        .regulatory-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; }
+        @media (max-width: 768px) { .regulatory-grid { grid-template-columns: 1fr; } }
+        .regulatory-card { padding: 1.5rem; }
+        .regulatory-header { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem; }
+        .regulatory-flag { font-size: 1.5rem; }
+        .regulatory-body h4 { font-size: 1rem; font-weight: 700; margin-bottom: 0.5rem; }
+        .regulatory-body p { font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6; }
+        .regulatory-list { margin-top: 1rem; list-style: none; }
+        .regulatory-list li { font-size: 0.8rem; color: var(--text-secondary); padding: 0.3rem 0; padding-left: 1rem; position: relative; }
+        .regulatory-list li::before { content: '•'; position: absolute; left: 0; color: var(--ripple-cyan); }
+        .trading-section { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+        @media (max-width: 768px) { .trading-section { grid-template-columns: 1fr; } }
+        .exchange-list { list-style: none; }
+        .exchange-list li { display: flex; justify-content: space-between; align-items: center; padding: 1rem; border-bottom: 1px solid var(--glass-border); }
+        .exchange-list li:last-child { border-bottom: none; }
+        .exchange-name { font-weight: 600; }
+        .exchange-type { font-size: 0.75rem; color: var(--text-muted); }
+        footer { margin-top: 4rem; padding: 2rem; border-top: 1px solid var(--glass-border); text-align: center; }
+        .footer-text { font-size: 0.8rem; color: var(--text-muted); }
+        .footer-disclaimer { margin-top: 1rem; padding: 1rem; background: rgba(255, 170, 0, 0.1); border: 1px solid rgba(255, 170, 0, 0.2); border-radius: 8px; font-size: 0.75rem; color: var(--accent-yellow); line-height: 1.6; }
+        .highlight-box { background: linear-gradient(135deg, rgba(0, 133, 255, 0.1) 0%, rgba(0, 183, 255, 0.05) 100%); border-left: 4px solid var(--ripple-blue); padding: 1.5rem; margin: 1.5rem 0; border-radius: 0 8px 8px 0; }
+        .highlight-box h4 { color: var(--ripple-cyan); font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.5rem; }
+        .highlight-box p { color: var(--text-secondary); font-size: 0.95rem; }
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: var(--ripple-darker); }
+        ::-webkit-scrollbar-thumb { background: var(--ripple-blue); border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="nav-container">
+            <div class="nav-logo">
+                <svg width="32" height="32" viewBox="0 0 32 32" fill="none"><circle cx="16" cy="16" r="14" stroke="#0085FF" stroke-width="2"/><path d="M10 16h12M16 10l6 6-6 6" stroke="#00B7FF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <span>XRPL RWA Platform</span>
+            </div>
+            <ul class="nav-links">
+                <li><a href="../index.html">← Back to Index</a></li>
+                <li><a href="#overview">Overview</a></li>
+                <li><a href="#metrics">Metrics</a></li>
+                <li><a href="#deep-dive">Deep Dive</a></li>
+                <li><a href="#risks">Risks</a></li>
+            </ul>
+        </div>
+    </nav>
+    <div class="container">
+        <header class="partner-header">
+            <div class="partner-title">
+                <h1 class="partner-name">OpenEden</h1>
+                <div class="partner-badges">
+                    <span class="badge badge-xrpl">XRPL Integrated</span>
+                    <span class="badge badge-asset">Money Market Fund</span>
+                    <span class="badge badge-asset">TBILL Product</span>
+                    <span class="badge badge-jurisdiction">🇻🇬 British Virgin Islands (BVI)</span>
+                </div>
+            </div>
+            <div class="partner-meta">
+                <div class="partner-meta-label">Partner Since</div>
+                <div class="partner-meta-value">2024</div>
+                <div class="partner-meta-label" style="margin-top: 0.5rem;">Status</div>
+                <div class="partner-meta-value" style="color: var(--accent-green);">● Active</div>
+            </div>
+        </header>
+        <section class="section" id="overview">
+            <h2 class="section-title"><span class="section-number">1</span>Executive Summary</h2>
+            <div class="glass-card">
+                <div class="executive-summary">
+                    <p>OpenEden has emerged as a leading issuer of tokenized U.S. Treasury bills, offering institutional and accredited investors direct exposure to short-term U.S. government securities through a BVI-regulated fund structure. The company's flagship TBILL product provides 24/7 minting and redemption capabilities, enabling investors to access U.S. Treasury yields with unprecedented flexibility. Unlike competitors that utilize complex fund structures, OpenEden's approach centers on direct ownership of physical T-bills, with Moody's-rated custody providing an additional layer of investor protection and transparency.</p>
+                    <p>The strategic partnership between OpenEden and Ripple brings a differentiated product to the XRP Ledger ecosystem—one that emphasizes transparency, regulatory compliance, and institutional-grade custody. While other tokenized treasury products rely on fund structures with multiple intermediaries, OpenEden's model provides direct exposure to the underlying T-bill portfolio, with real-time on-chain verification of holdings. This approach resonates with investors who prioritize clarity over complexity and seek to minimize counterparty risk in their Treasury allocations.</p>
+                    <p>From a competitive positioning standpoint, OpenEden occupies a unique niche in the tokenized treasury market. The BVI regulatory framework provides operational flexibility while maintaining investor protection standards, and the Moody's-rated custody solution addresses a key concern for institutional investors: the safety of underlying assets. The product's 24/7 minting and redemption capability matches the best-in-class offerings from competitors, while the $100 minimum for secondary market purchases significantly expands accessibility beyond traditional private fund minimums that typically require $25,000 or more.</p>
+                    <p>The investment thesis for OpenEden centers on the intersection of three structural trends: the continued growth of the tokenized treasury market, increasing institutional demand for regulated digital asset products, and the search for yield in a post-rate-hike environment. The product provides a straightforward value proposition—direct exposure to short-term U.S. Treasuries with 24/7 liquidity—without the complexity of structured products or the opacity of some competing offerings. For XRPL investors seeking a stable, yield-bearing allocation, OpenEden's TBILL represents a compelling option backed by the full faith and credit of the U.S. government.</p>
+                </div>
+            </div>
+        </section>
+        <section class="section" id="metrics">
+            <h2 class="section-title"><span class="section-number">2</span>Key Investment Metrics</h2>
+            <div class="glass-card">
+                <div class="metrics-grid">
+                    <div class="metric-item"><div class="metric-value">$500M+</div><div class="metric-label">Assets Under Management</div><div class="metric-sublabel">Growing Rapidly</div></div>
+                    <div class="metric-item"><div class="metric-value">$100</div><div class="metric-label">Min Investment (Secondary)</div><div class="metric-sublabel">Accessible</div></div>
+                    <div class="metric-item"><div class="metric-value">5.20%</div><div class="metric-label">Target Yield (Current)</div><div class="metric-sublabel">T-Bill Equivalent</div></div>
+                    <div class="metric-item"><div class="metric-value">24/7</div><div class="metric-label">Liquidity</div><div class="metric-sublabel">Mint & Redeem</div></div>
+                    <div class="metric-item"><div class="metric-value">Aaa</div><div class="metric-label">Custody Rating (Moody's)</div><div class="metric-sublabel">Highest Quality</div></div>
+                    <div class="metric-item"><div class="metric-value">75%</div><div class="metric-label">Permissioning</div><div class="metric-sublabel">Medium</div></div>
+                </div>
+                <div class="permission-gauge"><div class="gauge-label">Permissioning</div><div class="gauge-bar"><div class="gauge-fill" style="width: 75%;"></div></div><div class="gauge-label" style="color: var(--accent-yellow);">75% - Medium</div></div>
+            </div>
+        </section>
+        <section class="section" id="deep-dive">
+            <h2 class="section-title"><span class="section-number">3</span>Asset Deep-Dive</h2>
+            <div class="deep-dive-grid">
+                <div class="glass-card deep-dive-card">
+                    <h3>📊 TBILL Product Overview</h3>
+                    <p>OpenEden's TBILL product represents direct ownership of a diversified portfolio of short-term U.S. Treasury bills, the safest and most liquid sovereign debt in the world. The product is structured as a BVI mutual fund, with each token representing a proportional ownership interest in the underlying T-bill portfolio. Unlike fund-based structures that involve multiple layers of management fees and operational complexity, TBILL provides direct exposure to the yield curve with complete transparency into portfolio holdings.</p>
+                    <p>The portfolio maintains a conservative investment approach, focusing on Treasury bills with maturities of 4, 13, 26, and 52 weeks. The average weighted maturity is approximately 30-45 days, providing stability while capturing the current high yields available in the short-term Treasury market. Interest accrues daily and is reflected in the token balance, ensuring that investors receive their proportional share of Treasury income without any delay or administrative friction.</p>
+                    <ul><li>Direct T-bill ownership</li><li>BVI mutual fund structure</li><li>Daily interest accrual</li><li>30-45 day avg maturity</li><li>100% U.S. Treasury backed</li></ul>
+                </div>
+                <div class="glass-card deep-dive-card">
+                    <h3>🏦 Moody's-Rated Custody</h3>
+                    <p>A distinguishing feature of OpenEden's offering is the Moody's-rated custody solution, which provides institutional-grade protection for the underlying T-bill holdings. The custody arrangement ensures that all Treasury securities are held in segregated accounts with a top-tier custodian, with independent verification of holdings at regular intervals. This transparency addresses a critical concern in the tokenized assets space: the risk that underlying assets may not be properly safeguarded.</p>
+                    <p>Moody's rating of the custody solution reflects the custodian's financial strength, operational capabilities, and regulatory compliance. The rating agency evaluates factors including capital adequacy, risk management practices, technological infrastructure, and historical performance. For investors, the Moody's rating provides independent verification that their assets are protected to the highest standards, reducing the counterparty risk that often concerns institutional allocators.</p>
+                    <ul><li>Moody's Aaa rating</li><li>Segregated accounts</li><li>Independent verification</li><li>Top-tier custodian</li><li>Full collateralization</li></ul>
+                </div>
+                <div class="glass-card deep-dive-card">
+                    <h3>⏰ 24/7 Mint/Redeem Mechanics</h3>
+                    <p>OpenEden has implemented sophisticated 24/7 minting and redemption mechanics that enable investors to enter or exit positions at any time, without the limitations of traditional fund structures. The minting process involves on-chain transaction execution, with new tokens created when investors send USD (or supported stablecoins) to the OpenEden treasury. The redemption process burns tokens and returns the corresponding value in underlying assets, typically within the same business day.</p>
+                    <p>The technical implementation leverages smart contracts to manage the minting and redemption process, with oracle price feeds providing real-time NAV calculations. Authorized participants facilitate large-scale minting and redemption, while retail investors can access the product through secondary market purchases. This dual-channel approach ensures liquidity at various size levels, from small retail positions to large institutional allocations.</p>
+                    <ul><li>24/7 on-chain minting</li><li>Same-day redemption</li><li>Smart contract automation</li><li>Real-time NAV oracles</li><li>Multi-channel access</li></ul>
+                </div>
+                <div class="glass-card deep-dive-card">
+                    <h3>🇻🇬 BVI Regulatory Framework</h3>
+                    <p>OpenEden operates under the regulatory framework of the British Virgin Islands, a well-established offshore financial center with a sophisticated approach to digital asset regulation. The BVI Financial Services Commission (FSC) oversees mutual funds and investment business, providing regulatory oversight that balances investor protection with operational flexibility. The BVI's regulatory framework is recognized by international standards and maintains bilateral agreements with major jurisdictions.</p>
+                    <p>The BVI mutual fund structure provides several advantages: flexible capital requirements, efficient registration process, and access to a well-developed legal system based on English common law. For OpenEden, this structure enables rapid product development and market entry while maintaining compliance with international regulatory standards. The BVI framework also provides tax efficiency, with no corporate income tax, capital gains tax, or withholding tax on distributions.</p>
+                    <ul><li>FSC regulatory oversight</li><li>Mutual fund license</li><li>English common law</li><li>Tax efficient structure</li><li>International recognition</li></ul>
+                </div>
+                <div class="glass-card deep-dive-card">
+                    <h3>📈 Yield vs. Traditional Finance</h3>
+                    <p>OpenEden's TBILL product offers yield that directly tracks short-term U.S. Treasury rates, providing returns equivalent to traditional T-bill investments without the associated operational friction. In the current interest rate environment, the product delivers approximately 5.20% yield, significantly outperforming traditional savings accounts, money market funds, and most fixed-income alternatives. This yield is achieved with minimal credit risk, as the underlying assets are backed by the full faith and credit of the U.S. government.</p>
+                    <p>Compared to traditional Treasury investments, the tokenized version offers several advantages: 24/7 liquidity (versus T+1 settlement for new issues), fractional ownership (versus $1,000 minimums for individual T-bills), and transparent on-chain verification (versus relying on fund manager reports). These advantages make the product particularly attractive for investors seeking efficient Treasury exposure without the administrative burden of managing individual Treasury positions.</p>
+                    <ul><li>~5.20% current yield</li><li>Direct T-bill tracking</li><li>No management fees</li><li>24/7 vs T+1 settlement</li><li>$100 min vs $1,000 min</li></ul>
+                </div>
+                <div class="glass-card deep-dive-card">
+                    <h3>🔗 XRPL Technical Integration</h3>
+                    <p>OpenEden's integration with the XRP Ledger utilizes the platform's native tokenization capabilities to represent ownership interests in the underlying T-bill portfolio. Each TBILL token is an issued currency on XRPL, with the OpenEden treasury maintaining a 1:1 reserve of Treasury securities. The integration leverages XRPL's low transaction costs (minimal fees compared to Ethereum-based tokens), fast settlement (4-second blocks), and established regulatory clarity.</p>
+                    <p>The technical architecture includes authorized TrustLines to ensure compliance with accreditation requirements, real-time oracle feeds for accurate NAV calculations, and multi-signature wallets for enhanced security. The system also supports atomic swaps, enabling investors to exchange other XRPL tokens for TBILL without going through fiat on/off ramps. This integration provides XRPL users with seamless access to U.S. Treasury yields through a trusted, regulated vehicle.</p>
+                    <ul><li>XRPL issued currency</li><li>1:1 Treasury reserve</li><li>Authorized TrustLines</li><li>Real-time NAV oracles</li><li>Atomic swap support</li></ul>
+                </div>
+            </div>
+        </section>
+        <section class="section">
+            <h2 class="section-title"><span class="section-number">4</span>Technical Architecture: XRPL Integration</h2>
+            <div class="glass-card">
+                <div class="tech-architecture">
+                    <div class="tech-layer">
+                        <div class="tech-layer-title"><span class="layer-num">1</span>Token Layer</div>
+                        <ul class="tech-features"><li>XRPL issued currency (TBILL)</li><li>Authorized TrustLines</li><li>Transfer restrictions</li><li>Clawback capability</li><li>4-second settlement</li><li>Low transaction fees</li></ul>
+                    </div>
+                    <div class="tech-layer">
+                        <div class="tech-layer-title"><span class="layer-num">2</span>Smart Contract Layer</div>
+                        <ul class="tech-features"><li>Mint/redempt</li></ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+</body>
+</html>

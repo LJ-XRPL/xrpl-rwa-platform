@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Assnture | XRPL RWA Partner Deep Dive</title>
+    <style>
+        :root { --ripple-blue: #0085FF; --ripple-cyan: #00B7FF; --ripple-dark: #1A1A2E; --ripple-darker: #0F0F1A; --glass-bg: rgba(255, 255, 255, 0.03); --glass-border: rgba(255, 255, 255, 0.08); --text-primary: #FFFFFF; --text-secondary: rgba(255, 255, 255, 0.7); --text-muted: rgba(255, 255, 255, 0.5); --success: #00D68F; --warning: #FFAA00; --danger: #FF3D71; --gradient-primary: linear-gradient(135deg, var(--ripple-blue) 0%, var(--ripple-cyan) 100%); }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--ripple-darker); color: var(--text-primary); line-height: 1.6; min-height: 100vh; }
+        .bg-pattern { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(ellipse at 20% 20%, rgba(0, 133, 255, 0.15) 0%, transparent 50%), radial-gradient(ellipse at 80% 80%, rgba(0, 183, 255, 0.1) 0%, transparent 50%), repeating-linear-gradient(0deg, transparent, transparent 100px, rgba(0, 133, 255, 0.02) 100px, rgba(0, 133, 255, 0.02) 101px), repeating-linear-gradient(90deg, transparent, transparent 100px, rgba(0, 133, 255, 0.02) 100px, rgba(0, 133, 255, 0.02) 101px); pointer-events: none; z-index: 0; }
+        .container { max-width: 1400px; margin: 0 auto; padding: 0 24px; position: relative; z-index: 1; }
+        nav { background: rgba(26, 26, 46, 0.8); backdrop-filter: blur(20px); border-bottom: 1px solid var(--glass-border); position: sticky; top: 0; z-index: 100; }
+        .nav-content { display: flex; justify-content: space-between; align-items: center; padding: 16px 0; }
+        .nav-logo { display: flex; align-items: center; gap: 12px; text-decoration: none; color: var(--text-primary); }
+        .nav-logo-icon { width: 40px; height: 40px; background: var(--gradient-primary); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 18px; }
+        .nav-logo-text { font-weight: 600; font-size: 18px; }
+        .nav-links { display: flex; gap: 32px; list-style: none; }
+        .nav-links a { color: var(--text-secondary); text-decoration: none; font-size: 14px; transition: color 0.2s; }
+        .nav-links a:hover { color: var(--ripple-cyan); }
+        .header { padding: 80px 0 60px; text-align: center; }
+        .xrpl-badge { display: inline-flex; align-items: center; gap: 8px; background: rgba(0, 133, 255, 0.15); border: 1px solid rgba(0, 133, 255, 0.3); padding: 8px 16px; border-radius: 100px; font-size: 12px; font-weight: 600; color: var(--ripple-cyan); margin-bottom: 24px; }
+        .xrpl-badge::before { content: ''; width: 8px; height: 8px; background: var(--ripple-cyan); border-radius: 50%; animation: pulse 2s infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        .partner-title { font-size: 56px; font-weight: 700; margin-bottom: 16px; background: linear-gradient(135deg, #FFFFFF 0%, rgba(255,255,255,0.7) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .partner-meta { display: flex; justify-content: center; gap: 16px; flex-wrap: wrap; margin-bottom: 24px; }
+        .meta-tag { background: var(--glass-bg); border: 1px solid var(--glass-border); padding: 8px 16px; border-radius: 8px; font-size: 14px; color: var(--text-secondary); }
+        .meta-tag strong { color: var(--text-primary); margin-right: 6px; }
+        .partner-subtitle { font-size: 20px; color: var(--text-secondary); max-width: 800px; margin: 0 auto; }
+        .glass-card { background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 20px; padding: 32px; backdrop-filter: blur(20px); margin-bottom: 32px; }
+        .section-title { font-size: 28px; font-weight: 700; margin-bottom: 24px; display: flex; align-items: center; gap: 12px; }
+        .section-title::before { content: ''; width: 4px; height: 28px; background: var(--gradient-primary); border-radius: 2px; }
+        .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 20px; }
+        .metric-item { background: rgba(0, 0, 0, 0.2); border-radius: 12px; padding: 20px; text-align: center; }
+        .metric-value { font-size: 28px; font-weight: 700; color: var(--ripple-cyan); margin-bottom: 8px; }
+        .metric-label { font-size: 12px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+        .executive-summary p { font-size: 16px; color: var(--text-secondary); margin-bottom: 20px; line-height: 1.8; }
+        .executive-summary p:last-child { margin-bottom: 0; }
+        .deep-dive-content { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; }
+        @media (max-width: 1024px) { .deep-dive-content { grid-template-columns: 1fr; } }
+        .content-block h3 { font-size: 20px; font-weight: 600; margin-bottom: 16px; color: var(--text-primary); }
+        .content-block p, .content-block li { font-size: 15px; color: var(--text-secondary); line-height: 1.7; margin-bottom: 12px; }
+        .content-block ul { list-style: none; padding-left: 0; }
+        .content-block ul li { padding-left: 24px; position: relative; }
+        .content-block ul li::before { content: '→'; position: absolute; left: 0; color: var(--ripple-cyan); }
+        .data-table { width: 100%; border-collapse: collapse; margin-top: 16px; }
+        .data-table th, .data-table td { padding: 12px 16px; text-align: left; border-bottom: 1px solid var(--glass-border); }
+        .data-table th { font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); font-weight: 600; }
+        .data-table td { font-size: 14px; color: var(--text-secondary); }
+        .risk-matrix { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
+        .risk-item { background: rgba(0, 0, 0, 0.2); border-radius: 12px; padding: 24px; border-left: 4px solid var(--warning); }
+        .risk-item.high { border-left-color: var(--danger); }
+        .risk-item.medium { border-left-color: var(--warning); }
+        .risk-item.low { border-left-color: var(--success); }
+        .risk-title { font-size: 16px; font-weight: 600; margin-bottom: 8px; color: var(--text-primary); }
+        .risk-description { font-size: 14px; color: var(--text-secondary); line-height: 1.6; }
+        .architecture-flow { display: flex; flex-direction: column; gap: 16px; }
+        .flow-step { display: flex; align-items: center; gap: 16px; background: rgba(0, 0, 0, 0.2); padding: 20px; border-radius: 12px; position: relative; }
+        .flow-step:not(:last-child)::after { content: ''; position: absolute; left: 50%; bottom: -16px; width: 2px; height: 16px; background: var(--ripple-blue); transform: translateX(-50%); }
+        .flow-number { width: 40px; height: 40px; background: var(--gradient-primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 16px; flex-shrink: 0; }
+        .flow-content h4 { font-size: 16px; font-weight: 600; margin-bottom: 4px; color: var(--text-primary); }
+        .flow-content p { font-size: 14px; color: var(--text-secondary); }
+        .regulatory-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; }
+        .regulatory-card { background: rgba(0, 0, 0, 0.2); border-radius: 16px; padding: 28px; border: 1px solid var(--glass-border); }
+        .regulatory-card h4 { font-size: 18px; font-weight: 600; margin-bottom: 16px; color: var(--ripple-cyan); }
+        .regulatory-card ul { list-style: none; }
+        .regulatory-card li { padding: 8px 0; border-bottom: 1px solid var(--glass-border); font-size: 14px; color: var(--text-secondary); display: flex; justify-content: space-between; }
+        .regulatory-card li:last-child { border-bottom: none; }
+        .regulatory-card li span { color: var(--text-primary); font-weight: 500; }
+        footer { background: rgba(0, 0, 0, 0.3); border-top: 1px solid var(--glass-border); padding: 40px 0; margin-top: 80px; text-align: center; }
+        .footer-content { color: var(--text-muted); font-size: 14px; }
+        .footer-content a { color: var(--ripple-cyan); text-decoration: none; }
+        .two-column { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; }
+        @media (max-width: 900px) { .two-column { grid-template-columns: 1fr; } }
+        .highlight-box { background: linear-gradient(135deg, rgba(0, 133, 255, 0.1) 0%, rgba(0, 183, 255, 0.05) 100%); border: 1px solid rgba(0, 133, 255, 0.2); border-radius: 16px; padding: 24px; margin: 24px 0; }
+        .highlight-box h4 { font-size: 16px; font-weight: 600; color: var(--ripple-cyan); margin-bottom: 12px; }
+        .icon-list { list-style: none; padding: 0; }
+        .icon-list li { padding: 10px 0; padding-left: 32px; position: relative; border-bottom: 1px solid var(--glass-border); color: var(--text-secondary); font-size: 14px; }
+        .icon-list li:last-child { border-bottom: none; }
+        .icon-list li::before { content: '✓'; position: absolute; left: 0; color: var(--success); font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="bg-pattern"></div>
+    <nav>
+        <div class="container">
+            <div class="nav-content">
+                <a href="../index.html" class="nav-logo"><div class="nav-logo-icon">XR</div><span class="nav-logo-text">XRPL RWA Platform</span></a>
+                <ul class="nav-links">
+                    <li><a href="../index.html">Home</a></li>
+                    <li><a href="../index.html#partners">Partners</a></li>
+                    <li><a href="../index.html#about">About</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <header class="header">
+        <div class="container">
+            <div class="xrpl-badge">POWERED BY XRPL</div>
+            <h1 class="partner-title">Assnture</h1>
+            <div class="partner-meta">
+                <span class="meta-tag"><strong>Asset Class:</strong> Sukuk (Islamic Finance)</span>
+                <span class="meta-tag"><strong>Jurisdiction:</strong> ADGM (Abu Dhabi)</span>
+                <span class="meta-tag"><strong>Segment:</strong> Institutional & Retail</span>
+            </div>
+            <p class="partner-subtitle">Web3 investment bank regulated by ADGM specializing in Islamic finance tokenization</p>
+        </div>
+    </header>
+    <main class="container">
+        <section class="glass-card executive-summary">
+            <h2 class="section-title">Executive Summary</h2>
+            <p>Assnture represents a groundbreaking convergence of Islamic finance principles with blockchain technology, operating as a Web3 investment bank regulated by the Abu Dhabi Global Market (ADGM). This partnership marks the first institutional-grade Islamic finance platform on the XRP Ledger, bringing the $3.6 trillion global sukuk market into the digital age. As the only ADGM-regulated entity focused specifically on Islamic finance tokenization, Assnture occupies a unique position in the rapidly evolving RWA landscape, bridging the gap between traditional Shariah-compliant investment vehicles and modern digital asset infrastructure.</p>
+            <p>The investment thesis centers on unlocking the massive global sukuk market for both institutional and retail investors through fractionalization and tokenization. Traditional sukuk investments have historically been limited to high-net-worth individuals and institutional investors due to large minimum ticket sizes (typically $50,000+). Assnture's platform enables fractional ownership of institutional-grade sukuk, dramatically expanding access while maintaining full Shariah compliance. The ADGM regulatory framework provides institutional credibility, while the XRPL integration delivers instant settlement and transparent on-chain verification of asset backing.</p>
+            <p>From an investor perspective, Assnture offers exposure to the growing Islamic finance sector with the added benefits of blockchain technology including 24/7 market access, fractional ownership, and complete transparency. The platform targets both primary market sukuk issuances and secondary market trading of existing sukuk, creating a comprehensive Islamic finance marketplace. With the global Islamic finance industry growing at 10-15% annually and sukuk issuance reaching record levels, Assnture is positioned to capture significant market share in this high-growth segment.</p>
+            <p>The strategic importance of this partnership extends beyond the immediate product offering. Islamic finance represents one of the fastest-growing segments of global finance, with demand for Shariah-compliant investments rising across both Muslim and non-Muslim investor communities. By establishing Assnture on XRPL, Ripple gains early-mover advantage in this underserved market, creating network effects that will compound as more sukuk issuers and investors join the platform.</p>
+        </section>
+        <section class="glass-card">
+            <h2 class="section-title">Key Metrics & Investment Parameters</h2>
+            <div class="metrics-grid">
+                <div class="metric-item"><div class="metric-value">$3.6T</div><div class="metric-label">Global Sukuk Market</div></div>
+                <div class="metric-item"><div class="metric-value">5-8%</div><div class="metric-label">Sukuk Yield Estimate</div></div>
+                <div class="metric-item"><div class="metric-value">T+0</div><div class="metric-label">Settlement (XRPL)</div></div>
+                <div class="metric-item"><div class="metric-value">$50,000+</div><div class="metric-label">Min Investment (Exempt)</div></div>
+                <div class="metric-item"><div class="metric-value">85%</div><div class="metric-label">Permission Level</div></div>
+                <div class="metric-item"><div class="metric-value">ADGM</div><div class="metric-label">Regulator</div></div>
+                <div class="metric-item"><div class="metric-value">24/7</div><div class="metric-label">Trading Window</div></div>
+                <div class="metric-item"><div class="metric-value">Tier-1</div><div class="metric-label">Shariah Compliance</div></div>
+            </div>
+            <div class="highlight-box" style="margin-top: 32px;">
+                <h4>📋 Investment Eligibility Requirements</h4>
+                <ul class="icon-list">
+                    <li>Professional Investors: Minimum $50,000 (exempt from prospectus requirements)</li>
+                    <li>Retail Investors: Public offering permitted under ADGM regulations</li>
+                    <li>KYC/AML compliance required per UAE and international standards</li>
+                    <li>Shariah compliance verification for all investors</li>
+                    <li>Whitelisted wallet addresses for token transfers</li>
+                    <li>Cross-border distribution subject to local regulatory approval</li>
+                </ul>
+            </div>
+        </section>
+        <section class="glass-card">
+            <h2 class="section-title">Asset Deep Dive: Islamic Finance Tokenization</h2>
+            <div class="deep-dive-content">
+                <div class="content-block">
+                    <h3>Global Sukuk Market Overview</h3>
+                    <p>Sukuk (Islamic certificates) represent the Islamic finance industry's equivalent of conventional bonds, but with fundamental structural differences that make them distinct investment vehicles. Unlike conventional bonds which represent a debt obligation, sukuk represent ownership in an underlying asset or project, with profits and losses shared between investors and issuers according to Shariah principles.</p>
+                    <ul>
+                        <li><strong>Market Size:</strong> The global sukuk market has grown to $3.6 trillion in outstanding issuances, with annual issuance exceeding $200 billion</li>
+                        <li><strong>Geographic Distribution:</strong> Malaysia leads in sukuk issuance, followed by Saudi Arabia, UAE, Indonesia, and Qatar</li>
+                        <li><strong>Issuer Base:</strong> Sovereigns, quasi-sovereigns, and corporate issuers across banking, real estate, energy, and infrastructure sectors</li>
+                        <li><strong>Investor Demand:</strong> Growing interest from both Muslim investors seeking Shariah-compliant returns and non-Muslim investors attracted by asset-backed structure</li>
+                        <li><strong>Yield Environment:</strong> Sukuk yields typically range from 4-8% depending on issuer credit, tenor, and underlying asset class</li>
+                    </ul>
+                    <h3 style="margin-top: 32px;">ADGM Regulatory Framework</h3>
+                    <p>Abu Dhabi Global Market (ADGM) has established itself as one of the world's leading financial centers for digital assets and innovative finance. Its regulatory framework provides clear guidelines for tokenized securities while maintaining robust investor protections.</p>
+                    <ul>
+                        <li><strong>Regulatory Authority:</strong> ADGM Financial Services Regulatory Authority (FSRA) provides comprehensive oversight</li>
+                        <li><strong>Tokenization Rules:</strong> Clear guidelines for issuing tokenized securities including sukuk on blockchain platforms</li>
+                        <li><strong>Investor Protection:</strong> Segregated client assets, capital requirements, and robust compliance frameworks</li>
+                        <li><strong>Market Infrastructure:</strong> ADGM Digital Exchange provides regulated secondary trading venue</li>
+                        <li><strong>Shariah Governance:</strong> ADGM recognizes Shariah compliance as a legitimate regulatory consideration</li>
+                    </ul>
+                </div>
+                <div class="content-block">
+                    <h3>Shariah Compliance Mechanics</h3>
+                    <p>Assnture's platform implements rigorous Shariah compliance at every level of the investment process, from initial issuance to ongoing management and secondary trading. This ensures that all tokenized sukuk meet the highest standards of Islamic finance principles.</p>
+                    <ul>
+                        <li><strong>Shariah Board:</strong> Independent Shariah board reviews and approves all sukuk structures before issuance</li>
+                        <li><strong>Underlying Assets:</strong> All sukuk backed by tangible, Shariah-compliant assets including real estate, equipment, or trade receivables</li>
+                        <li><strong>Profit Distribution:</strong> Returns linked to actual asset performance, not predetermined interest rates</li>
+                        <li><strong>Prohibited Activities:</strong> Strict exclusions on alcohol, pork, gambling, conventional finance, and other non-compliant sectors</li>
+                        <li><strong>Zakat Calculation:</strong> Tools provided for investors to calculate and pay Islamic charity dues on returns</li>
+                    </ul>
+                    <h3 style="margin-top: 32px;">Tier-1 Sukuk Fractionalization</h3>
+                    <div class="highlight-box">
+                        <h4>Primary Market Issuance</h4>
+                        <ul class="icon-list">
+                            <li>New sukuk issuances tokenized at origin with institutional sponsors</li>
+                            <li>Minimum ticket sizes significantly reduced through fractionalization</li>
+                            <li>Direct participation in sukuk from AAA-rated sovereigns and blue-chip corporates</li>
+                            <li>Early access to oversubscribed issuances typically reserved for large institutions</li>
+                        </ul>
+                    </div>
+                    <div class="highlight-box">
+                        <h4>Secondary Market Trading</h4>
+                        <ul class="icon-list">
+                            <li>Existing sukuk holders can list holdings on XRPL DEX</li>
+                            <li>Instant settlement enables quick position adjustments</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <section class="glass-card">
+            <h2 class="section-title">Technical Architecture: XRPL for Islamic Finance</h2>
+            <p style="color: var(--text-secondary); margin-bottom: 32px;">Assnture's technical architecture leverages XRPL's capabilities while addressing the unique requirements of Islamic finance, including Shariah compliance verification, profit distribution mechanics, and asset-backed token structure.</p>
+            <div class="architecture-flow">
+                <div class="flow-step">
+                    <div class="flow-number">1</div>
+                    <div class="flow-content">
+                        <h4>Sukuk Issuance & Structuring</h4>
+                        <p>Issuer partners with Assnture to structure Shariah-compliant sukuk. Shariah board reviews and approves the transaction structure. Underlying assets are transferred to a special purpose vehicle (SPV). Token representation created on XRPL representing ownership interest in the SPV.</p>
+                    </div>
+                </div>
+                <div class="flow-step">
+                    <div class="flow-number">2</div>
+                    <div class="flow-content">
+                        <h4>Shariah Compliance Verification</h4>
+                        <p>Independent Shariah advisor verifies compliance with Islamic finance principles. On-chain metadata includes Shariah certification hash. Smart contracts enforce compliance rules including prohibited sector exclusions. All distributions validated against Shariah parameters.</p>
+                    </div>
+                </div>
+                <div class="flow-step">
+                    <div class="flow-number">3</div>
+                    <div class="flow-content">
+                        <h4>Investor Onboarding & KYC</h4>
+                        <p>Investors complete standard KYC/AML plus Shariah self-declaration. Whitelisted wallets enabled for sukuk transactions. Documentation verified by ADGM-licensed custodian. Investor eligibility determined by jurisdiction and investor type.</p>
+                    </div>
+                </div>
+                <div class="flow-step">
+                    <div class="flow-number">4</div>
+                    <div class="flow-content">
+                        <h4>Primary Subscription & Distribution</h4>
+                        <p>Investors subscribe through the platform with funds settled via traditional banking. Tokens minted on XRPL upon subscription confirmation. Fractional ownership enables minimum investments as low as regulatory thresholds permit. Investor registry maintained on-chain with privacy protections.</p>
+                    </div>
+                </div>
+                <div class="flow-step">
+                    <div class="flow-number">5</div>
+                    <div class="flow-content">
+                        <h4>Profit Distribution (Rental/Profit Sharing)</h4>
+                        <p>Underlying assets generate returns per sukuk structure (ijara, musharaka, murabaha). Distribution events triggered by smart contracts upon verification. Profits distributed pro-rata to token holders on-chain. Full transparency of distribution calculations provided to investors.</p>
+                    </div>
+                </div>
+                <div class="flow-step">
+                    <div class="flow-number">6</div>
+                    <div class="flow-content">
+                        <h4>Secondary Trading on XRPL DEX</h4>
+                        <p>Token holders can trade sukuk on the XRPL DEX. Price discovery reflects underlying asset value and market demand. Settlement in 4 seconds eliminates settlement risk. Trading restricted to verified investors in permitted jurisdictions.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="two-column" style="margin-top: 40px;">
+                <div class="content-block">
+                    <h3>XRPL Advantages for Islamic Finance</h3>
+                    <ul>
+                        <li><strong>Instant Settlement:</strong> 4-second finality enables same-day trading and settlement</li>
+                        <li><strong>Low Transaction Costs:</strong> ~$0.0002 per transaction enables efficient fractional trading</li>
+                        <li><strong>Native Compliance:</strong> Permissioned transfers align with regulated investor requirements</li>
+                        <li><strong>Asset Backing:</strong> Tokenization maintains asset-backed structure essential for Shariah compliance</li>
+                        <li><strong>Transparency:</strong> On-chain verification of holdings and distributions</li>
+                        <li><strong>Programmable:</strong> Smart contracts automate Shariah compliance verification</li>
+                    </ul>
+                </div>
+                <div class="content-block">
+                    <h3>Security & Compliance Features</h3>
+                    <ul>
+                        <li><strong>Multi-Tier Verification:</strong> Shariah board plus regulatory compliance</li>
+                        <li><strong>Custodial Safekeeping:</strong> Underlying assets held by licensed UAE custodian</li>
+                        <li><strong>On-Chain Audit Trail:</strong> Complete history for regulatory reporting</li>
+                        <li><strong>Permissioned Trading:</strong> Only verified investors can participate</li>
+                        <li><strong>Privacy Protection:</strong> Investor identities protected while enabling compliance verification</li>
+                        <li><strong>Regulatory Reporting:</strong> Automated compliance reports to ADGM</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+        <section class="glass-card">
+            <h2 class="section-title">Risk Factors & Mitigation Strategies</h2>
+            <div class="risk-matrix">
+                <div class="risk-item high">
+                    <div class="risk-title">Shariah Compliance Risk</div>
+                    <div class="risk-description"><strong>Risk:</strong> Token structure or underlying assets may be deemed non-Shariah compliant, impacting investor returns and marketability.<br><br><strong>Mitigation:</strong> Independent Shariah board approval required for all issuances. Ongoing compliance monitoring. Clear disclosure of structure and risks to investors.</div>
+                </div>
+                <div class="risk-item medium">
+                    <div class="risk-title">Regulatory Risk</div>
+                    <div class="risk-description"><strong>Risk:</strong> Changes in UAE or ADGM regulations could impact token issuance, distribution, or trading.<br><br><strong>Mitigation:</strong> Active engagement with regulators. Flexible architecture to adapt to regulatory changes. Jurisdictional diversification for distribution.</div>
+                </div>
+                <div class="risk-item medium">
+                    <div class="risk-title">Counterparty Risk</div>
+                    <div class="risk-description"><strong>Risk:</strong> Default by sukuk issuer or custodian could impact investor returns and principal.<br><br><strong>Mitigation:</strong> Credit evaluation of all issuers. Asset-backed structure provides collateral. Diversification across multiple issuers.</div>
+                </div>
+                <div class="risk-item medium">
+                    <div class="risk-title">Liquidity Risk</div>
+                    <div class="risk-description"><strong>Risk:</strong> Secondary market may have limited liquidity, especially for larger positions.<br><br><strong>Mitigation:</strong> Platform working with market makers. Issuer buyback commitments where applicable. XRPL DEX provides continuous trading opportunity.</div>
+                </div>
+                <div class="risk-item low">
+                    <div class="risk-title">Technology Risk</div>
+                    <div class="risk-description"><strong>Risk:</strong> Blockchain network issues or smart contract vulnerabilities could disrupt operations.<br><br><strong>Mitigation:</strong> XRPL's proven stability. Formal verification of smart contracts. Disaster recovery procedures.</div>
+                </div>
+                <div class="risk-item medium">
+                    <div class="risk-title">Market & Yield Risk</div>
+                    <div class="risk-description"><strong>Risk:</strong> Sukuk returns may fluctuate based on underlying asset performance and market conditions.<br><br><strong>Mitigation:</strong> Asset-backed structure provides downside protection. Diversification across sectors and geographies. Due diligence on all issuances.</div>
+                </div>
+            </div>
+        </section>
+        <section class="glass-card">
+            <h2 class="section-title">Regulatory Framework: ADGM</h2>
+            <div class="regulatory-grid">
+                <div class="regulatory-card">
+                    <h4>ADGM Financial Services Regulation</h4>
+                    <ul>
+                        <li><span>Regulatory Body</span><span>FSRA</span></li>
+                        <li><span>License Type</span><span>Financial Services Permission</span></li>
+                        <li><span>Capital Requirements</span><span>AED 2M+</span></li>
+                        <li><span>Client Assets</span><span>Segregated</span></li>
+                        <li><span>AML Framework</span><span>UAE AML Law</span></li>
+                    </ul>
+                </div>
+                <div class="regulatory-card">
+                    <h4>Shariah Governance</h4>
+                    <ul>
+                        <li><span>Shariah Board</span><span>Required</span></li>
+                        <li><span>Fatwa Required</span><span>Yes</span></li>
+                        <li><span>Compliance Audit</span><span>Annual</span></li>
+                        <li><span>DSB Recognition</span><span>Yes</span></li>
+                        <li><span>Dispute Resolution</span><span>ADGM Courts</span></li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+        <section class="glass-card">
+            <h2 class="section-title">Market Opportunity: TAM/SAM Analysis</h2>
+            <div class="deep-dive-content">
+                <div class="content-block">
+                    <h3>Total Addressable Market (TAM)</h3>
+                    <p>The global Islamic finance market represents a massive opportunity for tokenization, with sukuk at the forefront of growth.</p>
+                    <ul>
+                        <li><strong>Global Sukuk Outstanding:</strong> $3.6 trillion across sovereign, quasi-sovereign, and corporate issuances</li>
+                        <li><strong>Annual Sukuk Issuance:</strong> $200+ billion per year with strong growth trajectory</li>
+                        <li><strong>Islamic Banking Assets:</strong> $2.5 trillion in assets under management globally</li>
+                        <li><strong>Islamic Funds:</strong> $150+ billion in Shariah-compliant fund assets</li>
+                    </ul>
+                </div>
+                <div class="content-block">
+                    <h3>Serviceable Addressable Market (SAM)</h3>
+                    <p>Assnture's initial target market focuses on accessible segments with strong investor demand.</p>
+                    <ul>
+                        <li><strong>UAE Sukuk Market:</strong> $50+ billion in outstanding issuances</li>
+                        <li><strong>GCC Sukuk:</strong> $150+ billion combined GCC market</li>
+                        <li><strong>Asian Sukuk:</strong> $800+ billion in Malaysia, Indonesia, and other Asian markets</li>
+                        <li><strong>Western Demand:</strong> Growing interest from European and US investors in Islamic finance</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+    </main>
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <p>© 2026 XRPL RWA Platform. All rights reserved.</p>
+                <p>Built with ❤️ for the future of finance</p>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>
