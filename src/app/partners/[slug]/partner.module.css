@@ -1,0 +1,298 @@
+.main {
+  min-height: 100vh;
+}
+
+.partnerHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 3rem;
+  padding-bottom: 2rem;
+  border-bottom: 1px solid var(--glass-border);
+}
+
+.partnerName {
+  font-size: 2.5rem;
+  font-weight: 800;
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.partnerBadges {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-top: 0.5rem;
+}
+
+.partnerMeta {
+  text-align: right;
+}
+
+.metaLabel {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 0.25rem;
+}
+
+.metaValue {
+  font-size: 1.1rem;
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.sectionTitle {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.sectionNumber {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: var(--gradient-primary);
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.executiveSummary p {
+  color: var(--text-secondary);
+  font-size: 1.05rem;
+  line-height: 1.8;
+  margin-bottom: 1.25rem;
+}
+
+.executiveSummary p:first-of-type::first-letter {
+  font-size: 3rem;
+  font-weight: 800;
+  float: left;
+  line-height: 1;
+  margin-right: 0.5rem;
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Metrics */
+.metricsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem;
+}
+
+.metricItem {
+  text-align: center;
+  padding: 1.5rem 1rem;
+}
+
+.metricValue {
+  font-size: 2rem;
+  font-weight: 800;
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 0.25rem;
+}
+
+.metricLabel {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.metricSublabel {
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+  margin-top: 0.25rem;
+}
+
+.permissionGauge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--glass-border);
+}
+
+.gaugeBar {
+  flex: 1;
+  max-width: 300px;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.gaugeFill {
+  height: 100%;
+  background: var(--gradient-primary);
+  border-radius: 4px;
+}
+
+.gaugeLabel {
+  font-size: 0.9rem;
+  font-weight: 600;
+  min-width: 80px;
+}
+
+/* Deep Dive */
+.deepDiveGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.5rem;
+}
+
+.deepDiveCard {
+  padding: 2rem !important;
+}
+
+.deepDiveCard h3 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  color: var(--text-primary);
+}
+
+.deepDiveCard p {
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  line-height: 1.7;
+  margin-bottom: 1rem;
+}
+
+.deepDiveCard ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.deepDiveCard li {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  padding: 0.5rem 0;
+  padding-left: 1.5rem;
+  position: relative;
+}
+
+.deepDiveCard li::before {
+  content: '→';
+  position: absolute;
+  left: 0;
+  color: var(--ripple-cyan);
+}
+
+/* Tech Architecture */
+.techArchitecture {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+}
+
+.techLayer {
+  padding: 1.5rem;
+}
+
+.techLayerTitle {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--ripple-cyan);
+  margin-bottom: 1rem;
+}
+
+.techFeatures {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.techFeatures li {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  padding: 0.4rem 0;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+.techFeatures li::before {
+  content: '✓';
+  color: var(--accent-green);
+  font-weight: bold;
+}
+
+/* Risk */
+.riskMatrix {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+
+.riskItem {
+  padding: 1.25rem !important;
+}
+
+.riskHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.riskTitle {
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.riskLevel {
+  font-size: 0.7rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.riskLevel.low { background: rgba(0, 214, 143, 0.15); color: var(--accent-green); }
+.riskLevel.medium { background: rgba(255, 170, 0, 0.15); color: var(--accent-yellow); }
+.riskLevel.high { background: rgba(255, 71, 87, 0.15); color: var(--accent-red); }
+
+.riskDescription {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+.regulatoryGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.5rem;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .deepDiveGrid { grid-template-columns: 1fr; }
+  .techArchitecture { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 768px) {
+  .partnerHeader { flex-direction: column; gap: 1rem; }
+  .partnerMeta { text-align: left; }
+  .partnerName { font-size: 2rem; }
+  .riskMatrix { grid-template-columns: 1fr; }
+  .regulatoryGrid { grid-template-columns: 1fr; }
+}
