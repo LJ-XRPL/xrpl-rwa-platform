@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Linklogis | XRPL RWA Partner Deep Dive</title>
+    <style>
+        :root { --ripple-blue: #0085FF; --ripple-cyan: #00B7FF; --ripple-dark: #1A1A2E; --ripple-darker: #0F0F1A; --glass-bg: rgba(255, 255, 255, 0.03); --glass-border: rgba(255, 255, 255, 0.08); --text-primary: #FFFFFF; --text-secondary: rgba(255, 255, 255, 0.7); --text-muted: rgba(255, 255, 255, 0.5); --success: #00D68F; --warning: #FFAA00; --danger: #FF3D71; --gradient-primary: linear-gradient(135deg, var(--ripple-blue) 0%, var(--ripple-cyan) 100%); }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--ripple-darker); color: var(--text-primary); line-height: 1.6; min-height: 100vh; }
+        .bg-pattern { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(ellipse at 20% 20%, rgba(0, 133, 255, 0.15) 0%, transparent 50%), radial-gradient(ellipse at 80% 80%, rgba(0, 183, 255, 0.1) 0%, transparent 50%), repeating-linear-gradient(0deg, transparent, transparent 100px, rgba(0, 133, 255, 0.02) 100px, rgba(0, 133, 255, 0.02) 101px), repeating-linear-gradient(90deg, transparent, transparent 100px, rgba(0, 133, 255, 0.02) 100px, rgba(0, 133, 255, 0.02) 101px); pointer-events: none; z-index: 0; }
+        .container { max-width: 1400px; margin: 0 auto; padding: 0 24px; position: relative; z-index: 1; }
+        nav { background: rgba(26, 26, 46, 0.8); backdrop-filter: blur(20px); border-bottom: 1px solid var(--glass-border); position: sticky; top: 0; z-index: 100; }
+        .nav-content { display: flex; justify-content: space-between; align-items: center; padding: 16px 0; }
+        .nav-logo { display: flex; align-items: center; gap: 12px; text-decoration: none; color: var(--text-primary); }
+        .nav-logo-icon { width: 40px; height: 40px; background: var(--gradient-primary); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 18px; }
+        .nav-logo-text { font-weight: 600; font-size: 18px; }
+        .nav-links { display: flex; gap: 32px; list-style: none; }
+        .nav-links a { color: var(--text-secondary); text-decoration: none; font-size: 14px; transition: color 0.2s; }
+        .nav-links a:hover { color: var(--ripple-cyan); }
+        .header { padding: 80px 0 60px; text-align: center; }
+        .xrpl-badge { display: inline-flex; align-items: center; gap: 8px; background: rgba(0, 133, 255, 0.15); border: 1px solid rgba(0, 133, 255, 0.3); padding: 8px 16px; border-radius: 100px; font-size: 12px; font-weight: 600; color: var(--ripple-cyan); margin-bottom: 24px; }
+        .xrpl-badge::before { content: ''; width: 8px; height: 8px; background: var(--ripple-cyan); border-radius: 50%; animation: pulse 2s infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        .partner-title { font-size: 56px; font-weight: 700; margin-bottom: 16px; background: linear-gradient(135deg, #FFFFFF 0%, rgba(255,255,255,0.7) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .partner-meta { display: flex; justify-content: center; gap: 16px; flex-wrap: wrap; margin-bottom: 24px; }
+        .meta-tag { background: var(--glass-bg); border: 1px solid var(--glass-border); padding: 8px 16px; border-radius: 8px; font-size: 14px; color: var(--text-secondary); }
+        .meta-tag strong { color: var(--text-primary); margin-right: 6px; }
+        .partner-subtitle { font-size: 20px; color: var(--text-secondary); max-width: 800px; margin: 0 auto; }
+        .glass-card { background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 20px; padding: 32px; backdrop-filter: blur(20px); margin-bottom: 32px; }
+        .section-title { font-size: 28px; font-weight: 700; margin-bottom: 24px; display: flex; align-items: center; gap: 12px; }
+        .section-title::before { content: ''; width: 4px; height: 28px; background: var(--gradient-primary); border-radius: 2px; }
+        .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 20px; }
+        .metric-item { background: rgba(0, 0, 0, 0.2); border-radius: 12px; padding: 20px; text-align: center; }
+        .metric-value { font-size: 28px; font-weight: 700; color: var(--ripple-cyan); margin-bottom: 8px; }
+        .metric-label { font-size: 12px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+        .executive-summary p { font-size: 16px; color: var(--text-secondary); margin-bottom: 20px; line-height: 1.8; }
+        .executive-summary p:last-child { margin-bottom: 0; }
+        .deep-dive-content { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; }
+        @media (max-width: 1024px) { .deep-dive-content { grid-template-columns: 1fr; } }
+        .content-block h3 { font-size: 20px; font-weight: 600; margin-bottom: 16px; color: var(--text-primary); }
+        .content-block p, .content-block li { font-size: 15px; color: var(--text-secondary); line-height: 1.7; margin-bottom: 12px; }
+        .content-block ul { list-style: none; padding-left: 0; }
+        .content-block ul li { padding-left: 24px; position: relative; }
+        .content-block ul li::before { content: '→'; position: absolute; left: 0; color: var(--ripple-cyan); }
+        .data-table { width: 100%; border-collapse: collapse; margin-top: 16px; }
+        .data-table th, .data-table td { padding: 12px 16px; text-align: left; border-bottom: 1px solid var(--glass-border); }
+        .data-table th { font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); font-weight: 600; }
+        .data-table td { font-size: 14px; color: var(--text-secondary); }
+        .risk-matrix { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
+        .risk-item { background: rgba(0, 0, 0, 0.2); border-radius: 12px; padding: 24px; border-left: 4px solid var(--warning); }
+        .risk-item.high { border-left-color: var(--danger); }
+        .risk-item.medium { border-left-color: var(--warning); }
+        .risk-item.low { border-left-color: var(--success); }
+        .risk-title { font-size: 16px; font-weight: 600; margin-bottom: 8px; color: var(--text-primary); }
+        .risk-description { font-size: 14px; color: var(--text-secondary); line-height: 1.6; }
+        .architecture-flow { display: flex; flex-direction: column; gap: 16px; }
+        .flow-step { display: flex; align-items: center; gap: 16px; background: rgba(0, 0, 0, 0.2); padding: 20px; border-radius: 12px; position: relative; }
+        .flow-step:not(:last-child)::after { content: ''; position: absolute; left: 50%; bottom: -16px; width: 2px; height: 16px; background: var(--ripple-blue); transform: translateX(-50%); }
+        .flow-number { width: 40px; height: 40px; background: var(--gradient-primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 16px; flex-shrink: 0; }
+        .flow-content h4 { font-size: 16px; font-weight: 600; margin-bottom: 4px; color: var(--text-primary); }
+        .flow-content p { font-size: 14px; color: var(--text-secondary); }
+        .regulatory-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; }
+        .regulatory-card { background: rgba(0, 0, 0, 0.2); border-radius: 16px; padding: 28px; border: 1px solid var(--glass-border); }
+        .regulatory-card h4 { font-size: 18px; font-weight: 600; margin-bottom: 16px; color: var(--ripple-cyan); }
+        .regulatory-card ul { list-style: none; }
+        .regulatory-card li { padding: 8px 0; border-bottom: 1px solid var(--glass-border); font-size: 14px; color: var(--text-secondary); display: flex; justify-content: space-between; }
+        .regulatory-card li:last-child { border-bottom: none; }
+        .regulatory-card li span { color: var(--text-primary); font-weight: 500; }
+        footer { background: rgba(0, 0, 0, 0.3); border-top: 1px solid var(--glass-border); padding: 40px 0; margin-top: 80px; text-align: center; }
+        .footer-content { color: var(--text-muted); font-size: 14px; }
+        .footer-content a { color: var(--ripple-cyan); text-decoration: none; }
+        .two-column { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; }
+        @media (max-width: 900px) { .two-column { grid-template-columns: 1fr; } }
+        .highlight-box { background: linear-gradient(135deg, rgba(0, 133, 255, 0.1) 0%, rgba(0, 183, 255, 0.05) 100%); border: 1px solid rgba(0, 133, 255, 0.2); border-radius: 16px; padding: 24px; margin: 24px 0; }
+        .highlight-box h4 { font-size: 16px; font-weight: 600; color: var(--ripple-cyan); margin-bottom: 12px; }
+        .icon-list { list-style: none; padding: 0; }
+        .icon-list li { padding: 10px 0; padding-left: 32px; position: relative; border-bottom: 1px solid var(--glass-border); color: var(--text-secondary); font-size: 14px; }
+        .icon-list li:last-child { border-bottom: none; }
+        .icon-list li::before { content: '✓'; position: absolute; left: 0; color: var(--success); font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="bg-pattern"></div>
+    <nav>
+        <div class="container">
+            <div class="nav-content">
+                <a href="../index.html" class="nav-logo"><div class="nav-logo-icon">XR</div><span class="nav-logo-text">XRPL RWA Platform</span></a>
+                <ul class="nav-links">
+                    <li><a href="../index.html">Home</a></li>
+                    <li><a href="../index.html#partners">Partners</a></li>
+                    <li><a href="../index.html#about">About</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <header class="header">
+        <div class="container">
+            <div class="xrpl-badge">POWERED BY XRPL</div>
+            <h1 class="partner-title">Linklogis</h1>
+            <div class="partner-meta">
+                <span class="meta-tag"><strong>Asset Class:</strong> Trade Receivables</span>
+                <span class="meta-tag"><strong>Jurisdiction:</strong> Singapore/Hong Kong</span>
+                <span class="meta-tag"><strong>Segment:</strong> Institutional</span>
+            </div>
+            <p class="partner-subtitle">Global trade finance platform tokenizing corporate receivables on XRPL with stablecoin escrow</p>
+        </div>
+    </header>
+    <main class="container">
+        <section class="glass-card executive-summary">
+            <h2 class="section-title">Executive Summary</h2>
+            <p>Linklogis operates at the intersection of global trade finance and blockchain technology, providing institutional investors with access to the $12 trillion global trade finance gap through tokenized corporate receivables. Operating under dual Singapore-Hong Kong regulatory frameworks, Linklogis offers institutional-grade trade finance assets with transparent on-chain verification, stablecoin escrow mechanics, and instant settlement via XRPL. This partnership addresses one of the most persistent inefficiencies in global commerce: the mismatch between buyers' extended payment terms and suppliers' working capital needs.</p>
+            <p>The investment thesis centers on capturing the significant yield premium available in trade finance while leveraging blockchain technology to improve transparency, reduce friction, and enable fractional ownership. Trade finance traditionally offers 8-15% yields with relatively low default rates due to the underlying commercial transactions and structured credit enhancement mechanisms. By tokenizing receivables on XRPL, Linklogis enables institutional investors to access this attractive asset class with improved liquidity, real-time verification, and programmatic compliance.</p>
+            <p>From an investor perspective, Linklogis offers exposure to real economy cash flows backed by corporate trade obligations. Each tokenized receivable is tied to an actual commercial transaction between verified corporate entities, with payment secured through escrow mechanisms and confirmed purchase orders. The Singapore-MAS and Hong Kong-SFC regulatory frameworks provide institutional-grade compliance, while the dual-jurisdiction structure enables access to both Asian and international trade corridors.</p>
+            <p>The strategic importance of this partnership extends beyond immediate product offerings. Trade finance represents one of blockchain's most compelling use cases, addressing a massive market inefficiency while creating real economic value. By establishing Linklogis on XRPL, Ripple gains access to the backbone of global commerce—the movement of goods and services that drives the world economy.</p>
+        </section>
+        <section class="glass-card">
+            <h2 class="section-title">Key Metrics & Investment Parameters</h2>
+            <div class="metrics-grid">
+                <div class="metric-item"><div class="metric-value">$12T</div><div class="metric-label">Global Trade Finance Gap</div></div>
+                <div class="metric-item"><div class="metric-value">8-15%</div><div class="metric-label">Yield Estimate</div></div>
+                <div class="metric-item"><div class="metric-value">T+0</div><div class="metric-label">Settlement (XRPL)</div></div>
+                <div class="metric-item"><div class="metric-value">Custom</div><div class="metric-label">Min Investment</div></div>
+                <div class="metric-item"><div class="metric-value">70%</div><div class="metric-label">Permission Level</div></div>
+                <div class="metric-item"><div class="metric-value">MAS/SFC</div><div class="metric-label">Regulators</div></div>
+                <div class="metric-item"><div class="metric-value">24/7</div><div class="metric-label">Trading Window</div></div>
+                <div class="metric-item"><div class="metric-value">Escrowed</div><div class="metric-label">Asset Backing</div></div>
+            </div>
+            <div class="highlight-box" style="margin-top: 32px;">
+                <h4>📋 Investment Eligibility Requirements</h4>
+                <ul class="icon-list">
+                    <li>Verified Corporate Entities only (institutional investors)</li>
+                    <li>Minimum investment: Custom per transaction structure</li>
+                    <li>Corporate KYC/AML compliance required</li>
+                    <li>Accredited investor verification for fund structures</li>
+                    <li>Singapore or Hong Kong entity for direct participation</li>
+                    <li>Whitelisted wallet addresses for token transfers</li>
+                </ul>
+            </div>
+        </section>
+        <section class="glass-card">
+            <h2 class="section-title">Asset Deep Dive: Trade Receivables Tokenization</h2>
+            <div class="deep-dive-content">
+                <div class="content-block">
+                    <h3>Global Trade Finance Market</h3>
+                    <p>The global trade finance market represents one of the largest and most underserved segments of the global financial system. Despite $12 trillion in annual trade finance gaps, institutional investors have historically had limited access to this attractive asset class due to structural inefficiencies and information asymmetries.</p>
+                    <ul>
+                        <li><strong>Market Size:</strong> $25+ trillion in annual global trade, with $12 trillion in financing gaps</li>
+                        <li><strong>Yields:</strong> 8-15% returns depending on tenor, geography, and counterparty credit</li>
+                        <li><strong>Default Rates:</strong> Historically low (<2%) due to underlying commercial transactions</li>
+                        <li><strong>Short Duration:</strong> Typical trade finance tenors of 30-180 days</li>
+                        <li><strong>Real Economy:</strong> Every position backed by actual goods/services movement</li>
+                    </ul>
+                    <h3 style="margin-top: 32px;">Corporate Receivables Structure</h3>
+                    <p>Linklogis tokenizes trade receivables arising from verified commercial transactions between corporate buyers and suppliers. Each receivable represents a payment obligation from a corporate buyer to a supplier, secured through various credit enhancement mechanisms.</p>
+                    <ul>
+                        <li><strong>Invoice Financing:</strong> Tokenization of approved invoices with confirmed payment terms</li>
+                        <li><strong>Supply Chain Finance:</strong> Reverse factoring programs with buyer confirmation</li>
+                        <li><strong>Purchase Order Financing:</strong> Pre-shipment financing against confirmed orders</li>
+                        <li><strong>Export Finance:</strong> Trade finance for international commerce with documentary credit</li>
+                    </ul>
+                </div>
+                <div class="content-block">
+                    <h3>Stablecoin Escrow Mechanics</h3>
+                    <p>Linklogis implements innovative stablecoin escrow mechanics that provide unprecedented security for tokenized trade receivables, addressing concerns about payment default and counterparty risk.</p>
+                    <div class="highlight-box">
+                        <h4>Escrow Process</h4>
+                        <ul class="icon-list">
+                            <li>Buyer deposits stablecoin (USDC/USDT) into escrow smart contract</li>
+                            <li>Tokenized receivable created on XRPL representing payment obligation</li>
+                            <li>Upon goods delivery confirmation, escrow released to supplier</li>
+                            <li>Investor purchases receivable at discount, receives payment at maturity</li>
+                            <li>Full audit trail of transaction through distributed ledger</li>
+                        </ul>
+                    </div>
+                    <div class="highlight-box">
+                        <h4>Credit Enhancement</h4>
+                        <ul class="icon-list">
+                            <li>Escrowed stablecoin provides first-loss protection</li>
+                            <li>Corporate buyer credit lines backstopped by banking partners</li>
+                            <li>Insurance coverage available for political and commercial risks</li>
+                            <li>Multi-seller pools provide diversification across counterparties</li>
+                        </ul>
+                    </div>
+                    <h3 style="margin-top: 24px;">Dual Jurisdiction Advantage</h3>
+                    <ul>
+                        <li><strong>Singapore:</strong> MAS regulatory framework, access to Asian trade corridors</li>
+                        <li><strong>Hong Kong:</strong> SFC oversight, gateway to China and global markets</li>
+                        <li><strong>Regulatory Clarity:</strong> Both jurisdictions provide clear tokenization frameworks</li>
+                        <li><strong>Distribution Reach:</strong> Access to both Asian and international investor pools</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+        <section class="glass-card">
+            <h2 class="section-title">Technical Architecture: XRPL Trade Finance</h2>
+            <p style="color: var(--text-secondary); margin-bottom: 32px;">Linklogis's technical architecture leverages XRPL's capabilities to create institutional-grade trade finance instruments with transparent verification, secure escrow, and instant settlement.</p>
+            <div class="architecture-flow">
+                <div class="flow-step">
+                    <div class="flow-number">1</div>
+                    <div class="flow-content">
+                        <h4>Trade Transaction Initiation</h4>
+                        <p>Corporate buyer and supplier agree on commercial terms. Purchase order or invoice generated with verified documentation. Transaction registered on Linklogis platform with KYC completion for both parties.</p>
+                    </div>
+                </div>
+                <div class="flow-step">
+                    <div class="flow-number">2</div>
+                    <div class="flow-content">
+                        <h4>Stablecoin Escrow Creation</h4>
+                        <p>Buyer deposits stablecoin (USDC/USDT) equivalent to invoice value into smart contract escrow. Escrow locked until delivery confirmation verified. On-chain verification of escrow creation.</p>
+                    </div>
+                </div>
+                <div class="flow-step">
+                    <div class="flow-number">3</div>
+                    <div class="flow-content">
+                        <h4>Receivable Tokenization</h4>
+                        <p>Tokenized receivable created on XRPL representing payment obligation. Token includes all transaction metadata: buyer, supplier, amount, tenor, escrow reference. Fractionalized for investor participation.</p>
+                    </div>
+                </div>
+                <div class="flow-step">
+                    <div class="flow-number">4</div>
+                    <div class="flow-content">
+                        <h4>Investor Participation</h4>
+                        <p>Institutional investors purchase fractions of receivable at discount. Tokens held in investor wallets with full ownership verification. Yield locked based on discount rate and tenor.</p>
+                    </div>
+                </div>
+                <div class="flow-step">
+                    <div class="flow-number">5</div>
+                    <div class="flow-content">
+                        <h4>Delivery & Payment</h4>
+                        <p>Goods/services delivered per contract terms. Delivery confirmation triggers escrow release. Payment released from escrow to supplier. Investor principal returned with yield.</p>
+                    </div>
+                </div>
+                <div class="flow-step">
+                    <div class="flow-number">6</div>
+                    <div class="flow-content">
+                        <h4>Secondary Trading</h4>
+                        <p>Investors can trade receivable tokens on XRPL before maturity. Price reflects time to maturity and counterparty risk. Settlement in 4 seconds with full transfer history.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="two-column" style="margin-top: 40px;">
+                <div class="content-block">
+                    <h3>XRPL Advantages for Trade Finance</h3>
+                    <ul>
+                        <li><strong>Instant Settlement:</strong> 4-second finality eliminates settlement risk in trade finance</li>
+                        <li><strong>Transparency:</strong> Full on-chain verification of transaction and escrow status</li>
+                        <li><strong>Fractionalization:</strong> Enables participation in large trade transactions</li>
+                        <li><strong>Programmable:</strong> Smart contracts automate escrow and payment release</li>
+                        <li><strong>Global Access:</strong> Cross-border participation enabled through blockchain</li>
+                        <li><strong>Immutable Audit:</strong> Complete transaction history for regulatory compliance</li>
+                    </ul>
+                </div>
+                <div class="content-block">
+                    <h3>Security & Verification</h3>
+                    <ul>
+                        <li><strong>Escrow Security:</strong> Stablecoin escrow provides first-loss capital protection</li>
+                        <li><strong>Document Verification:</strong> Multi-source verification of trade documents</li>
+                        <li><strong>Counterparty Due Diligence:</strong> Full corporate KYC on all participants</li>
+                        <li><strong>Insurance Integration:</strong> Political and commercial risk insurance available</li>
+                        <li><strong>Real-time Monitoring:</strong> Continuous tracking of transaction status on-chain</li>
+                        <li><strong>Regulatory Compliance:</strong> MAS and SFC reporting integrated</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+        <section class="glass-card">
+            <h2 class="section-title">Risk Factors & Mitigation Strategies</h2>
+            <div class="risk-matrix">
+                <div class="risk-item high">
+                    <div class="risk-title">Counterparty Risk</div>
+                    <div class="risk-description"><strong>Risk:</strong> Corporate buyer default on payment obligation could result in investor loss.<br><br><strong>Mitigation:</strong> Stablecoin escrow provides first-loss protection. Credit analysis on all counterparties. Diversification across multiple buyers. Insurance coverage available.</div>
+                </div>
+                <div class="risk-item medium">
+                    <div class="risk-title">Trade Dispute Risk</div>
+                    <div class="risk-description"><strong>Risk:</strong> Disputes between buyer and supplier over goods/services could delay payment.<br><br><strong>Mitigation:</strong> Independent verification of delivery. Arbitration mechanisms in contract. Escrow protects against fraud. Insurance for commercial disputes.</div>
+                </div>
+                <div class="risk-item medium">
+                    <div class="risk-title">Regulatory Risk</div>
+                    <div class="risk-description"><strong>Risk:</strong> Changes in Singapore or Hong Kong regulations could impact token issuance or trading.<br><br><strong>Mitigation:</strong> Active regulatory engagement. Flexible architecture. Dual jurisdiction provides alternatives.</div>
+                </div>
+                <div class="risk-item medium">
+                    <div class="risk-title">Stablecoin Risk</div>
+                    <div class="risk-description"><strong>Risk:</strong> Stablecoin de-pegging or loss could impact escrow security.<br><br><strong>Mitigation:</strong> Only high-quality stablecoins (USDC) in escrow. Real-time monitoring of peg. Diversification options available.</div>
+                </div>
+                <div class="risk-item low">
+                    <div class="risk-title">Technology Risk</div>
+                    <div class="risk-description"><strong>Risk:</strong> Blockchain network issues or smart contract vulnerabilities could disrupt operations.<br><br><strong>Mitigation:</strong> XRPL's proven stability. Formal verification of smart contracts. Backup systems and procedures.</div>
+                </div>
+                <div class="risk-item medium">
+                    <div class="risk-title">Liquidity Risk</div>
+                    <div class="risk-description"><strong>Risk:</strong> Secondary market may have limited depth for larger positions before maturity.<br><br><strong>Mitigation:</strong> Market maker participation. Short-dated nature of receivables. Early exit through platform repurchase.</div>
+                </div>
+            </div>
+        </section>
+        <section class="glass-card">
+            <h2 class="section-title">Regulatory Framework: MAS (Singapore) & SFC (Hong Kong)</h2>
+            <div class="regulatory-grid">
+                <div class="regulatory-card">
+                    <h4>Singapore (MAS)</h4>
+                    <ul>
+                        <li><span>Regulator</span><span>Monetary Authority of Singapore</span></li>
+                        <li><span>License</span><span>Major Payment Institution</span></li>
+                        <li><span>Token Classification</span><span>Digital Payment Token</span></li>
+                        <li><span>AML</span><span>MAS Notice 626</span></li>
+                        <li><span> investor Protection</span><span>Securities/Futures Act</span></li>
+                    </ul>
+                </div>
+                <div class="regulatory-card">
+                    <h4>Hong Kong (SFC)</h4>
+                    <ul>
+                        <li><span>Regulator</span><span>Securities & Futures Commission</span></li>
+                        <li><span>License</span><span>Virtual Asset Trading Platform</span></li>
+                        <li><span>Token Classification</span><span>Virtual Asset</span></li>
+                        <li><span>AML</span><span>AMLO</span></li>
+                        <li><span> investor Protection</span><span>Securities/FOE Ordinance</span></li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+        <section class="glass-card">
+            <h2 class="section-title">Market Opportunity: TAM/SAM Analysis</h2>
+            <div class="deep-dive-content">
+                <div class="content-block">
+                    <h3>Total Addressable Market (TAM)</h3>
+                    <p>The global trade finance market represents one of the largest opportunities for blockchain disruption, with massive financing gaps and significant yield potential.</p>
+                    <ul>
+                        <li><strong>Global Trade Volume:</strong> $25+ trillion in annual international trade</li>
+                        <li><strong>Trade Finance Gap:</strong> $12 trillion in unmet financing needs globally</li>
+                        <li><strong>Asia-Pacific Share:</strong> 40%+ of global trade, $5+ trillion gap</li>
+                        <li><strong>Yields:</strong> 8-15% returns with historically low default rates</li>
+                    </ul>
+                </div>
+                <div class="content-block">
+                    <h3>Serviceable Addressable Market (SAM)</h3>
+                    <p>Linklogis's dual Singapore-Hong Kong platform targets the most liquid and regulated trade finance corridors in Asia.</p>
+                    <ul>
+                        <li><strong>Singapore Trade:</strong> $1+ trillion annual trade through Singapore</li>
+                        <li><strong>Hong Kong Trade:</strong> $800+ billion through Hong Kong</li>
+                        <li><strong>Regional Focus:</strong> ASEAN, China, and Asia-Pacific trade corridors</li>
+                        <li><strong>Investor Access:</strong> Both Asian and international institutional capital</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+    </main>
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <p>© 2026 XRPL RWA Platform. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>
