@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vert Capital | XRPL RWA Partner Deep Dive</title>
+    <style>
+        :root { --ripple-blue: #0085FF; --ripple-cyan: #00B7FF; --ripple-dark: #1A1A2E; --ripple-darker: #0F0F1A; --glass-bg: rgba(255, 255, 255, 0.03); --glass-border: rgba(255, 255, 255, 0.08); --text-primary: #FFFFFF; --text-secondary: rgba(255, 255, 255, 0.7); --text-muted: rgba(255, 255, 255, 0.5); --success: #00D68F; --warning: #FFAA00; --danger: #FF3D71; --gradient-primary: linear-gradient(135deg, var(--ripple-blue) 0%, var(--ripple-cyan) 100%); }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--ripple-darker); color: var(--text-primary); line-height: 1.6; min-height: 100vh; }
+        .bg-pattern { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(ellipse at 20% 20%, rgba(0, 133, 255, 0.15) 0%, transparent 50%), radial-gradient(ellipse at 80% 80%, rgba(0, 183, 255, 0.1) 0%, transparent 50%), repeating-linear-gradient(0deg, transparent, transparent 100px, rgba(0, 133, 255, 0.02) 100px, rgba(0, 133, 255, 0.02) 101px), repeating-linear-gradient(90deg, transparent, transparent 100px, rgba(0, 133, 255, 0.02) 100px, rgba(0, 133, 255, 0.02) 101px); pointer-events: none; z-index: 0; }
+        .container { max-width: 1400px; margin: 0 auto; padding: 0 24px; position: relative; z-index: 1; }
+        nav { background: rgba(26, 26, 46, 0.8); backdrop-filter: blur(20px); border-bottom: 1px solid var(--glass-border); position: sticky; top: 0; z-index: 100; }
+        .nav-content { display: flex; justify-content: space-between; align-items: center; padding: 16px 0; }
+        .nav-logo { display: flex; align-items: center; gap: 12px; text-decoration: none; color: var(--text-primary); }
+        .nav-logo-icon { width: 40px; height: 40px; background: var(--gradient-primary); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 18px; }
+        .nav-logo-text { font-weight: 600; font-size: 18px; }
+        .nav-links { display: flex; gap: 32px; list-style: none; }
+        .nav-links a { color: var(--text-secondary); text-decoration: none; font-size: 14px; transition: color 0.2s; }
+        .nav-links a:hover { color: var(--ripple-cyan); }
+        .header { padding: 80px 0 60px; text-align: center; }
+        .xrpl-badge { display: inline-flex; align-items: center; gap: 8px; background: rgba(0, 133, 255, 0.15); border: 1px solid rgba(0, 133, 255, 0.3); padding: 8px 16px; border-radius: 100px; font-size: 12px; font-weight: 600; color: var(--ripple-cyan); margin-bottom: 24px; }
+        .xrpl-badge::before { content: ''; width: 8px; height: 8px; background: var(--ripple-cyan); border-radius: 50%; animation: pulse 2s infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        .partner-title { font-size: 56px; font-weight: 700; margin-bottom: 16px; background: linear-gradient(135deg, #FFFFFF 0%, rgba(255,255,255,0.7) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .partner-meta { display: flex; justify-content: center; gap: 16px; flex-wrap: wrap; margin-bottom: 24px; }
+        .meta-tag { background: var(--glass-bg); border: 1px solid var(--glass-border); padding: 8px 16px; border-radius: 8px; font-size: 14px; color: var(--text-secondary); }
+        .meta-tag strong { color: var(--text-primary); margin-right: 6px; }
+        .partner-subtitle { font-size: 20px; color: var(--text-secondary); max-width: 800px; margin: 0 auto; }
+        .glass-card { background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 20px; padding: 32px; backdrop-filter: blur(20px); margin-bottom: 32px; }
+        .section-title { font-size: 28px; font-weight: 700; margin-bottom: 24px; display: flex; align-items: center; gap: 12px; }
+        .section-title::before { content: ''; width: 4px; height: 28px; background: var(--gradient-primary); border-radius: 2px; }
+        .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 20px; }
+        .metric-item { background: rgba(0, 0, 0, 0.2); border-radius: 12px; padding: 20px; text-align: center; }
+        .metric-value { font-size: 28px; font-weight: 700; color: var(--ripple-cyan); margin-bottom: 8px; }
+        .metric-label { font-size: 12px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+        .executive-summary p { font-size: 16px; color: var(--text-secondary); margin-bottom: 20px; line-height: 1.8; }
+        .executive-summary p:last-child { margin-bottom: 0; }
+        .deep-dive-content { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; }
+        @media (max-width: 1024px) { .deep-dive-content { grid-template-columns: 1fr; } }
+        .content-block h3 { font-size: 20px; font-weight: 600; margin-bottom: 16px; color: var(--text-primary); }
+        .content-block p, .content-block li { font-size: 15px; color: var(--text-secondary); line-height: 1.7; margin-bottom: 12px; }
+        .content-block ul { list-style: none; padding-left: 0; }
+        .content-block ul li { padding-left: 24px; position: relative; }
+        .content-block ul li::before { content: '→'; position: absolute; left: 0; color: var(--ripple-cyan); }
+        .data-table { width: 100%; border-collapse: collapse; margin-top: 16px; }
+        .data-table th, .data-table td { padding: 12px 16px; text-align: left; border-bottom: 1px solid var(--glass-border); }
+        .data-table th { font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); font-weight: 600; }
+        .data-table td { font-size: 14px; color: var(--text-secondary); }
+        .risk-matrix { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
+        .risk-item { background: rgba(0, 0, 0, 0.2); border-radius: 12px; padding: 24px; border-left: 4px solid var(--warning); }
+        .risk-item.high { border-left-color: var(--danger); }
+        .risk-item.medium { border-left-color: var(--warning); }
+        .risk-item.low { border-left-color: var(--success); }
+        .risk-title { font-size: 16px; font-weight: 600; margin-bottom: 8px; color: var(--text-primary); }
+        .risk-description { font-size: 14px; color: var(--text-secondary); line-height: 1.6; }
+        .architecture-flow { display: flex; flex-direction: column; gap: 16px; }
+        .flow-step { display: flex; align-items: center; gap: 16px; background: rgba(0, 0, 0, 0.2); padding: 20px; border-radius: 12px; position: relative; }
+        .flow-step:not(:last-child)::after { content: ''; position: absolute; left: 50%; bottom: -16px; width: 2px; height: 16px; background: var(--ripple-blue); transform: translateX(-50%); }
+        .flow-number { width: 40px; height: 40px; background: var(--gradient-primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 16px; flex-shrink: 0; }
+        .flow-content h4 { font-size: 16px; font-weight: 600; margin-bottom: 4px; color: var(--text-primary); }
+        .flow-content p { font-size: 14px; color: var(--text-secondary); }
+        .regulatory-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; }
+        .regulatory-card { background: rgba(0, 0, 0, 0.2); border-radius: 16px; padding: 28px; border: 1px solid var(--glass-border); }
+        .regulatory-card h4 { font-size: 18px; font-weight: 600; margin-bottom: 16px; color: var(--ripple-cyan); }
+        .regulatory-card ul { list-style: none; }
+        .regulatory-card li { padding: 8px 0; border-bottom: 1px solid var(--glass-border); font-size: 14px; color: var(--text-secondary); display: flex; justify-content: space-between; }
+        .regulatory-card li:last-child { border-bottom: none; }
+        .regulatory-card li span { color: var(--text-primary); font-weight: 500; }
+        footer { background: rgba(0, 0, 0, 0.3); border-top: 1px solid var(--glass-border); padding: 40px 0; margin-top: 80px; text-align: center; }
+        .footer-content { color: var(--text-muted); font-size: 14px; }
+        .footer-content a { color: var(--ripple-cyan); text-decoration: none; }
+        .two-column { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; }
+        @media (max-width: 900px) { .two-column { grid-template-columns: 1fr; } }
+        .highlight-box { background: linear-gradient(135deg, rgba(0, 133, 255, 0.1) 0%, rgba(0, 183, 255, 0.05) 100%); border: 1px solid rgba(0, 133, 255, 0.2); border-radius: 16px; padding: 24px; margin: 24px 0; }
+        .highlight-box h4 { font-size: 16px; font-weight: 600; color: var(--ripple-cyan); margin-bottom: 12px; }
+        .icon-list { list-style: none; padding: 0; }
+        .icon-list li { padding: 10px 0; padding-left: 32px; position: relative; border-bottom: 1px solid var(--glass-border); color: var(--text-secondary); font-size: 14px; }
+        .icon-list li:last-child { border-bottom: none; }
+        .icon-list li::before { content: '✓'; position: absolute; left: 0; color: var(--success); font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="bg-pattern"></div>
+    <nav>
+        <div class="container">
+            <div class="nav-content">
+                <a href="../index.html" class="nav-logo"><div class="nav-logo-icon">XR</div><span class="nav-logo-text">XRPL RWA Platform</span></a>
+                <ul class="nav-links">
+                    <li><a href="../index.html">Home</a></li>
+                    <li><a href="../index.html#partners">Partners</a></li>
+                    <li><a href="../index.html#about">About</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <header class="header">
+        <div class="container">
+            <div class="xrpl-badge">POWERED BY XRPL</div>
+            <h1 class="partner-title">Vert Capital</h1>
+            <div class="partner-meta">
+                <span class="meta-tag"><strong>Asset Class:</strong> Private Credit</span>
+                <span class="meta-tag"><strong>Jurisdiction:</strong> Brazil</span>
+                <span class="meta-tag"><strong>Segment:</strong> Institutional</span>
+            </div>
+            <p class="partner-subtitle">Brazil's leading debt capital markets infrastructure, specializing in securitization and structured finance tokenization</p>
+        </div>
+    </header>
+    <main class="container">
+        <section class="glass-card executive-summary">
+            <h2 class="section-title">Executive Summary</h2>
+            <p>Vert Capital represents Brazil's most sophisticated debt capital markets infrastructure, specializing in the securitization and structured finance of real economy assets. Operating under CVM (Comissão de Valores Mobiliários) regulation, Vert Capital brings the country's $200+ billion securitization market onto the XRP Ledger, enabling institutional investors to access previously illiquid private credit positions. The platform focuses on high-growth sectors including agribusiness (agro), real estate, and fintech lending, representing the backbone of Brazil's economy.</p>
+            <p>The investment thesis centers on capturing the significant yield premium available in Brazilian private credit markets while leveraging blockchain technology to improve liquidity, transparency, and operational efficiency. Brazilian credit spreads historically offer 300-500 basis points of yield premium over developed market equivalents, driven by higher domestic interest rates, currency risk, and structural inefficiencies. Vert Capital's tokenization platform enables international investors to access these returns with improved infrastructure and reduced operational friction.</p>
+            <p>From an investor perspective, Vert Capital offers exposure to Brazil's high-yield private credit market through a regulated, transparent, and technologically advanced platform. The CVM regulatory framework provides institutional-grade compliance and investor protection, while XRPL integration delivers instant settlement, complete transaction transparency, and programmatic compliance verification. The platform targets both primary market participations in new securitizations and secondary market trading of existing positions.</p>
+            <p>The strategic importance of this partnership extends beyond immediate product offerings. Brazil represents Latin America's largest economy and most developed capital markets, yet significant infrastructure gaps create inefficiencies that blockchain technology can address. By establishing Vert Capital on XRPL, Ripple gains access to one of the world's most attractive private credit markets, creating network effects as more domestic and international investors discover the benefits of on-chain debt trading.</p>
+        </section>
+        <section class="glass-card">
+            <h2 class="section-title">Key Metrics & Investment Parameters</h2>
+            <div class="metrics-grid">
+                <div class="metric-item"><div class="metric-value">$200B+</div><div class="metric-label">Brazil Securitization</div></div>
+                <div class="metric-item"><div class="metric-value">12-18%</div><div class="metric-label">Yield Estimate (BRL)</div></div>
+                <div class="metric-item"><div class="metric-value">T+0</div><div class="metric-label">Settlement (XRPL)</div></div>
+                <div class="metric-item"><div class="metric-value">BRL 1,000</div><div class="metric-label">Min Investment (~$200)</div></div>
+                <div class="metric-item"><div class="metric-value">70%</div><div class="metric-label">Permission Level</div></div>
+                <div class="metric-item"><div class="metric-value">CVM</div><div class="metric-label">Regulator</div></div>
+                <div class="metric-item"><div class="metric-value">24/7</div><div class="metric-label">Trading Window</div></div>
+                <div class="metric-item"><div class="metric-value">Structured</div><div class="metric-label">Asset Backing</div></div>
+            </div>
+            <div class="highlight-box" style="margin-top: 32px;">
+                <h4>📋 Investment Eligibility Requirements</h4>
+                <ul class="icon-list">
+                    <li>Sophisticated investors as defined by CVM Instruction 554</li>
+                    <li>Minimum investment: BRL 1,000 (approximately $200 USD equivalent)</li>
+                    <li>KYC/AML compliance required per Brazilian regulations</li>
+                    <li>Accredited investor verification for certain product categories</li>
+                    <li>Tax ID (CPF/CNPJ) verification for Brazilian investors</li>
+                    <li>Whitelisted wallet addresses required for token transfers</li>
+                </ul>
+            </div>
+        </section>
+        <section class="glass-card">
+            <h2 class="section-title">Asset Deep Dive: Brazilian Private Credit</h2>
+            <div class="deep-dive-content">
+                <div class="content-block">
+                    <h3>Brazil Securitization Market</h3>
+                    <p>Brazil's securitization market represents one of Latin America's most developed and liquid private credit markets, with over $200 billion in outstanding securitizations and annual issuance exceeding $30 billion. The market is characterized by diverse asset classes, sophisticated structuring, and strong institutional investor demand.</p>
+                    <ul>
+                        <li><strong>Agribusiness (Agro):</strong> $80+ billion in outstanding CPR (Cédula do Produto Rural) and LCA (Letra de Crédito do Agronegócio) securitizations, backed by agricultural receivables and commodities</li>
+                        <li><strong>Real Estate:</strong> $60+ billion in CRI (Certificado de Recebíveis Imobiliários) secur by commercial anditizations, backed residential property leases and receivables</li>
+                        <li><strong>Financial Institution:</strong> $40+ billion in LCI (Letra de Crédito Imobiliário) and other bank-originated structured products</li>
+                        <li><strong>Invoice Financing:</strong> $20+ billion in receivables-backed securitizations from factoring and supply chain finance</li>
+                    </ul>
+                    <h3 style="margin-top: 32px;">Focus Sectors</h3>
+                    <ul>
+                        <li><strong>Agribusiness:</strong> Brazil is world's largest exporter of soybeans, coffee, orange juice, and sugar. Agro securitizations backed by future harvest receivables provide stable cash flows</li>
+                        <li><strong>Real Estate:</strong> Commercial and residential property leases across major Brazilian cities generate predictable rental income streams</li>
+                        <li><strong>Fintech Lending:</strong> Emerging asset class backed by consumer and SME loan portfolios with strong historical performance</li>
+                    </ul>
+                </div>
+                <div class="content-block">
+                    <h3>Investment Structure</h3>
+                    <p>Vert Capital structures tokenized private credit investments to match the risk-return profile of traditional Brazilian securitizations while leveraging blockchain technology for improved accessibility and liquidity.</p>
+                    <div class="highlight-box">
+                        <h4>Primary Market Participation</h4>
+                        <ul class="icon-list">
+                            <li>Direct participation in new securitization issuances</li>
+                            <li>Senior and mezzanine tranche availability</li>
+                            <li>Fixed and floating rate structures</li>
+                            <li>Monthly, quarterly, and bullet payment schedules</li>
+                            <li>Minimum tickets starting at BRL 1,000</li>
+                        </ul>
+                    </div>
+                    <div class="highlight-box">
+                        <h4>Secondary Market Trading</h4>
+                        <ul class="icon-list">
+                            <li>Existing positions can be listed on XRPL DEX</li>
+                            <li>Real-time pricing and instant settlement</li>
+                            <li>Position fractionalization enables partial sales</li>
+                            <li>Full transaction history on distributed ledger</li>
+                        </ul>
+                    </div>
+                    <h3 style="margin-top: 24px;">Yield Enhancement</h3>
+                    <ul>
+                        <li><strong>Credit Spreads:</strong> 300-500 bps premium over developed market equivalents</li>
+                        <li><strong>Currency Exposure:</strong> Optional BRL-denominated returns with FX hedging available</li>
+                        <li><strong>Duration Premium:</strong> Higher yields for longer-dated positions</li>
+                        <li><strong>Illiquidity Premium:</strong> Additional compensation for less liquid positions</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+        <section class="glass-card">
+            <h2 class="section-title">Technical Architecture: XRPL Integration</h2>
+            <p style="color: var(--text-secondary); margin-bottom: 32px;">Vert Capital's technical architecture enables the tokenization of Brazilian securitizations on XRPL while maintaining full regulatory compliance with CVM requirements and Brazilian capital markets infrastructure.</p>
+            <div class="architecture-flow">
+                <div class="flow-step">
+                    <div class="flow-number">1</div>
+                    <div class="flow-content">
+                        <h4>Securitization Structuring</h4>
+                        <p>Vert Capital works with originators (banks, fintechs, corporates) to structure securitizations per CVM requirements. Legal documentation finalized. SPV (Special Purpose Vehicle) established. Credit ratings obtained from Brazilian rating agencies.</p>
+                    </div>
+                </div>
+                <div class="flow-step">
+                    <div class="flow-number">2</div>
+                    <div class="flow-content">
+                        <h4>CVM Registration & Approval</h4>
+                        <p>Securitization registered with CVM (Comissão de Valores Mobiliários). Offering memorandum filed and approved. Investor eligibility confirmed. Token representation created on XRPL following CVM tokenization guidelines.</p>
+                    </div>
+                </div>
+                <div class="flow-step">
+                    <div class="flow-number">3</div>
+                    <div class="flow-content">
+                        <h4>Investor Onboarding</h4>
+                        <p>Investors complete CVM-compliant KYC/AML procedures. Accreditation verified per investor category. Whitelisted wallets enabled. Brazilian investors require valid CPF; foreign investors require equivalent documentation.</p>
+                    </div>
+                </div>
+                <div class="flow-step">
+                    <div class="flow-number">4</div>
+                    <div class="flow-content">
+                        <h4>Primary Subscription</h4>
+                        <p>Investors subscribe through platform with BRL settled via traditional banking. Tokens minted on XRPL upon subscription confirmation. Fractional ownership enables BRL 1,000 minimum investments. Investor registry maintained.</p>
+                    </div>
+                </div>
+                <div class="flow-step">
+                    <div class="flow-number">5</div>
+                    <div class="flow-content">
+                        <h4>Cash Flow Distribution</h4>
+                        <p>Underlying securitization generates principal and interest payments. Distribution events triggered by off-chain servicer confirmation. Payments distributed pro-rata to token holders. Full transparency of payment calculations.</p>
+                    </div>
+                </div>
+                <div class="flow-step">
+                    <div class="flow-number">6</div>
+                    <div class="flow-content">
+                        <h4>Secondary Trading</h4>
+                        <p>Token holders can trade positions on XRPL DEX. Price discovery reflects credit risk and market conditions. Settlement in 4 seconds eliminates settlement risk. Trading restricted to verified eligible investors.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="two-column" style="margin-top: 40px;">
+                <div class="content-block">
+                    <h3>XRPL Advantages for Brazilian Credit</h3>
+                    <ul>
+                        <li><strong>Instant Settlement:</strong> 4-second finality enables same-day trading and settlement</li>
+                        <li><strong>Low Costs:</strong> ~$0.0002 per transaction enables efficient fractional trading</li>
+                        <li><strong>Fractionalization:</strong> BRL 1,000 minimum opens market to broader investor base</li>
+                        <li><strong>Transparency:</strong> On-chain verification of holdings and cash flows</li>
+                        <li><strong>24/7 Trading:</strong> Overcomes Brazilian market hours limitations</li>
+                        <li><strong>Cross-Border:</strong> Enables international investor access to Brazilian credit</li>
+                    </ul>
+                </div>
+                <div class="content-block">
+                    <h3>Security & Compliance</h3>
+                    <ul>
+                        <li><strong>CVM Registration:</strong> All securitizations registered with Brazilian regulator</li>
+                        <li><strong>Rating Agency:</strong> Independent credit ratings from Brazilian agencies</li>
+                        <li><strong>Custodial Oversight:</strong> Licensed Brazilian custodian for asset safekeeping</li>
+                        <li><strong>Audit Trail:</strong> Complete on-chain history for regulatory reporting</li>
+                        <li><strong>Permissioned Access:</strong> Only verified eligible investors can participate</li>
+                        <li><strong>Tax Compliance:</strong> Integration with Brazilian tax authority (Receita Federal)</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+        <section class="glass-card">
+            <h2 class="section-title">Risk Factors & Mitigation Strategies</h2>
+            <div class="risk-matrix">
+                <div class="risk-item high">
+                    <div class="risk-title">Currency & FX Risk</div>
+                    <div class="risk-description"><strong>Risk:</strong> BRL volatility against USD could significantly impact returns for international investors.<br><br><strong>Mitigation:</strong> FX hedging products available. Natural hedge through BRL-denominated cash flows. Option to convert returns at maturity.</div>
+                </div>
+                <div class="risk-item medium">
+                    <div class="risk-title">Credit Risk</div>
+                    <div class="risk-description"><strong>Risk:</strong> Default by underlying borrowers could impact securitization cash flows and investor returns.<br><br><strong>Mitigation:</strong> Diversification across multiple borrowers and sectors. Credit enhancement structures (overcollateralization, subordination). Independent rating agency assessment.</div>
+                </div>
+                <div class="risk-item medium">
+                    <div class="risk-title">Regulatory Risk</div>
+                    <div class="risk-description"><strong>Risk:</strong> Changes in CVM regulations or Brazilian capital markets rules could impact operations.<br><br><strong>Mitigation:</strong> Active regulatory engagement. Flexible architecture to adapt. Jurisdictional diversification where possible.</div>
+                </div>
+                <div class="risk-item medium">
+                    <div class="risk-title">Interest Rate Risk</div>
+                    <div class="risk-description"><strong>Risk:</strong> Brazilian interest rate (SELIC) changes impact floating-rate returns and fixed-rate valuations.<br><br><strong>Mitigation:</strong> Mix of fixed and floating rate structures. Duration management. Market price reflects rate expectations.</div>
+                </div>
+                <div class="risk-item medium">
+                    <div class="risk-title">Liquidity Risk</div>
+                    <div class="risk-description"><strong>Risk:</strong> Secondary market may have limited depth, especially for larger positions.<br><br><strong>Mitigation:</strong> Market maker participation. Issuer repurchase commitments. XRPL DEX provides continuous trading opportunity.</div>
+                </div>
+                <div class="risk-item low">
+                    <div class="risk-title">Operational Risk</div>
+                    <div class="risk-description"><strong>Risk:</strong> Technology failures or servicer issues could disrupt cash flow processing.<br><br><strong>Mitigation:</strong> Multiple servicer backup. Robust technology infrastructure. Disaster recovery procedures.</div>
+                </div>
+            </div>
+        </section>
+        <section class="glass-card">
+            <h2 class="section-title">Regulatory Framework: CVM (Brazil)</h2>
+            <div class="regulatory-grid">
+                <div class="regulatory-card">
+                    <h4>CVM Regulatory Framework</h4>
+                    <ul>
+                        <li><span>Regulatory Body</span><span>CVM</span></li>
+                        <li><span>Primary Regulation</span><span>Instrução CVM 554</span></li>
+                        <li><span>Tokenization</span><span>Instrução CVM 88</span></li>
+                        <li><span>Investor Categories</span><span>Qualified/Professional</span></li>
+                        <li><span>Reporting</span><span>Monthly/Quarterly</span></li>
+                    </ul>
+                </div>
+                <div class="regulatory-card">
+                    <h4>Market Infrastructure</h4>
+                    <ul>
+                        <li><span>Central Depositary</span><span>CBLC/B3</span></li>
+                        <li><span>Rating Agencies</span><span>Moody's, S&P, Fitch</span></li>
+                        <li><span>Custodians</span><span>Licensed Banks</span></li>
+                        <li><span>Tax Authority</span><span>Receita Federal</span></li>
+                        <li><span>Dispute Resolution</span><span>CAM-SP</span></li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+        <section class="glass-card">
+            <h2 class="section-title">Market Opportunity: TAM/SAM Analysis</h2>
+            <div class="deep-dive-content">
+                <div class="content-block">
+                    <h3>Total Addressable Market (TAM)</h3>
+                    <p>Brazil's private credit market represents one of the largest and most attractive opportunities in emerging markets.</p>
+                    <ul>
+                        <li><strong>Securitization Outstanding:</strong> $200+ billion in CRI, CPR, LCA, and other structured products</li>
+                        <li><strong>Annual Issuance:</strong> $30+ billion per year with strong growth trajectory</li>
+                        <li><strong>Private Credit Market:</strong> $500+ billion including bank loans and direct lending</li>
+                        <li><strong>Yields:</strong> 12-18% BRL equivalent provides significant yield premium</li>
+                    </ul>
+                </div>
+                <div class="content-block">
+                    <h3>Serviceable Addressable Market (SAM)</h3>
+                    <p>Vert Capital's initial focus targets the most accessible and attractive segments of the Brazilian market.</p>
+                    <ul>
+                        <li><strong>Agribusiness:</strong> $80+ billion in agro securitizations with strong international demand</li>
+                        <li><strong>Real Estate:</strong> $60+ billion in property-backed securities</li>
+                        <li><strong>Fintech Lending:</strong> $20+ billion emerging asset class</li>
+                        <li><strong>International Access:</strong> Tokenization enables $50B+ foreign investor participation</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+    </main>
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <p>© 2026 XRPL RWA Platform. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>
