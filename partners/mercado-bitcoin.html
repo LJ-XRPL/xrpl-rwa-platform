@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mercado Bitcoin | XRPL RWA Partner Deep Dive</title>
+    <style>
+        :root { --ripple-blue: #0085FF; --ripple-cyan: #00B7FF; --ripple-dark: #1A1A2E; --ripple-darker: #0F0F1A; --glass-bg: rgba(255, 255, 255, 0.03); --glass-border: rgba(255, 255, 255, 0.08); --text-primary: #FFFFFF; --text-secondary: rgba(255, 255, 255, 0.7); --text-muted: rgba(255, 255, 255, 0.5); --success: #00D68F; --warning: #FFAA00; --danger: #FF3D71; --gradient-primary: linear-gradient(135deg, var(--ripple-blue) 0%, var(--ripple-cyan) 100%); }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--ripple-darker); color: var(--text-primary); line-height: 1.6; min-height: 100vh; }
+        .bg-pattern { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(ellipse at 20% 20%, rgba(0, 133, 255, 0.15) 0%, transparent 50%), radial-gradient(ellipse at 80% 80%, rgba(0, 183, 255, 0.1) 0%, transparent 50%), repeating-linear-gradient(0deg, transparent, transparent 100px, rgba(0, 133, 255, 0.02) 100px, rgba(0, 133, 255, 0.02) 101px), repeating-linear-gradient(90deg, transparent, transparent 100px, rgba(0, 133, 255, 0.02) 100px, rgba(0, 133, 255, 0.02) 101px); pointer-events: none; z-index: 0; }
+        .container { max-width: 1400px; margin: 0 auto; padding: 0 24px; position: relative; z-index: 1; }
+        nav { background: rgba(26, 26, 46, 0.8); backdrop-filter: blur(20px); border-bottom: 1px solid var(--glass-border); position: sticky; top: 0; z-index: 100; }
+        .nav-content { display: flex; justify-content: space-between; align-items: center; padding: 16px 0; }
+        .nav-logo { display: flex; align-items: center; gap: 12px; text-decoration: none; color: var(--text-primary); }
+        .nav-logo-icon { width: 40px; height: 40px; background: var(--gradient-primary); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 18px; }
+        .nav-logo-text { font-weight: 600; font-size: 18px; }
+        .nav-links { display: flex; gap: 32px; list-style: none; }
+        .nav-links a { color: var(--text-secondary); text-decoration: none; font-size: 14px; transition: color 0.2s; }
+        .nav-links a:hover { color: var(--ripple-cyan); }
+        .header { padding: 80px 0 60px; text-align: center; }
+        .xrpl-badge { display: inline-flex; align-items: center; gap: 8px; background: rgba(0, 133, 255, 0.15); border: 1px solid rgba(0, 133, 255, 0.3); padding: 8px 16px; border-radius: 100px; font-size: 12px; font-weight: 600; color: var(--ripple-cyan); margin-bottom: 24px; }
+        .xrpl-badge::before { content: ''; width: 8px; height: 8px; background: var(--ripple-cyan); border-radius: 50%; animation: pulse 2s infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        .partner-title { font-size: 56px; font-weight: 700; margin-bottom: 16px; background: linear-gradient(135deg, #FFFFFF 0%, rgba(255,255,255,0.7) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .partner-meta { display: flex; justify-content: center; gap: 16px; flex-wrap: wrap; margin-bottom: 24px; }
+        .meta-tag { background: var(--glass-bg); border: 1px solid var(--glass-border); padding: 8px 16px; border-radius: 8px; font-size: 14px; color: var(--text-secondary); }
+        .meta-tag strong { color: var(--text-primary); margin-right: 6px; }
+        .partner-subtitle { font-size: 20px; color: var(--text-secondary); max-width: 800px; margin: 0 auto; }
+        .glass-card { background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 20px; padding: 32px; backdrop-filter: blur(20px); margin-bottom: 32px; }
+        .section-title { font-size: 28px; font-weight: 700; margin-bottom: 24px; display: flex; align-items: center; gap: 12px; }
+        .section-title::before { content: ''; width: 4px; height: 28px; background: var(--gradient-primary); border-radius: 2px; }
+        .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 20px; }
+        .metric-item { background: rgba(0, 0, 0, 0.2); border-radius: 12px; padding: 20px; text-align: center; }
+        .metric-value { font-size: 28px; font-weight: 700; color: var(--ripple-cyan); margin-bottom: 8px; }
+        .metric-label { font-size: 12px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+        .executive-summary p { font-size: 16px; color: var(--text-secondary); margin-bottom: 20px; line-height: 1.8; }
+        .executive-summary p:last-child { margin-bottom: 0; }
+        .deep-dive-content { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; }
+        @media (max-width: 1024px) { .deep-dive-content { grid-template-columns: 1fr; } }
+        .content-block h3 { font-size: 20px; font-weight: 600; margin-bottom: 16px; color: var(--text-primary); }
+        .content-block p, .content-block li { font-size: 15px; color: var(--text-secondary); line-height: 1.7; margin-bottom: 12px; }
+        .content-block ul { list-style: none; padding-left: 0; }
+        .content-block ul li { padding-left: 24px; position: relative; }
+        .content-block ul li::before { content: '→'; position: absolute; left: 0; color: var(--ripple-cyan); }
+        .data-table { width: 100%; border-collapse: collapse; margin-top: 16px; }
+        .data-table th, .data-table td { padding: 12px 16px; text-align: left; border-bottom: 1px solid var(--glass-border); }
+        .data-table th { font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); font-weight: 600; }
+        .data-table td { font-size: 14px; color: var(--text-secondary); }
+        .risk-matrix { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
+        .risk-item { background: rgba(0, 0, 0, 0.2); border-radius: 12px; padding: 24px; border-left: 4px solid var(--warning); }
+        .risk-item.high { border-left-color: var(--danger); }
+        .risk-item.medium { border-left-color: var(--warning); }
+        .risk-item.low { border-left-color: var(--success); }
+        .risk-title { font-size: 16px; font-weight: 600; margin-bottom: 8px; color: var(--text-primary); }
+        .risk-description { font-size: 14px; color: var(--text-secondary); line-height: 1.6; }
+        .architecture-flow { display: flex; flex-direction: column; gap: 16px; }
+        .flow-step { display: flex; align-items: center; gap: 16px; background: rgba(0, 0, 0, 0.2); padding: 20px; border-radius: 12px; position: relative; }
+        .flow-step:not(:last-child)::after { content: ''; position: absolute; left: 50%; bottom: -16px; width: 2px; height: 16px; background: var(--ripple-blue); transform: translateX(-50%); }
+        .flow-number { width: 40px; height: 40px; background: var(--gradient-primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 16px; flex-shrink: 0; }
+        .flow-content h4 { font-size: 16px; font-weight: 600; margin-bottom: 4px; color: var(--text-primary); }
+        .flow-content p { font-size: 14px; color: var(--text-secondary); }
+        .regulatory-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; }
+        .regulatory-card { background: rgba(0, 0, 0, 0.2); border-radius: 16px; padding: 28px; border: 1px solid var(--glass-border); }
+        .regulatory-card h4 { font-size: 18px; font-weight: 600; margin-bottom: 16px; color: var(--ripple-cyan); }
+        .regulatory-card ul { list-style: none; }
+        .regulatory-card li { padding: 8px 0; border-bottom: 1px solid var(--glass-border); font-size: 14px; color: var(--text-secondary); display: flex; justify-content: space-between; }
+        .regulatory-card li:last-child { border-bottom: none; }
+        .regulatory-card li span { color: var(--text-primary); font-weight: 500; }
+        footer { background: rgba(0, 0, 0, 0.3); border-top: 1px solid var(--glass-border); padding: 40px 0; margin-top: 80px; text-align: center; }
+        .footer-content { color: var(--text-muted); font-size: 14px; }
+        .footer-content a { color: var(--ripple-cyan); text-decoration: none; }
+        .two-column { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; }
+        @media (max-width: 900px) { .two-column { grid-template-columns: 1fr; } }
+        .highlight-box { background: linear-gradient(135deg, rgba(0, 133, 255, 0.1) 0%, rgba(0, 183, 255, 0.05) 100%); border: 1px solid rgba(0, 133, 255, 0.2); border-radius: 16px; padding: 24px; margin: 24px 0; }
+        .highlight-box h4 { font-size: 16px; font-weight: 600; color: var(--ripple-cyan); margin-bottom: 12px; }
+        .icon-list { list-style: none; padding: 0; }
+        .icon-list li { padding: 10px 0; padding-left: 32px; position: relative; border-bottom: 1px solid var(--glass-border); color: var(--text-secondary); font-size: 14px; }
+        .icon-list li:last-child { border-bottom: none; }
+        .icon-list li::before { content: '✓'; position: absolute; left: 0; color: var(--success); font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="bg-pattern"></div>
+    <nav>
+        <div class="container">
+            <div class="nav-content">
+                <a href="../index.html" class="nav-logo"><div class="nav-logo-icon">XR</div><span class="nav-logo-text">XRPL RWA Platform</span></a>
+                <ul class="nav-links">
+                    <li><a href="../index.html">Home</a></li>
+                    <li><a href="../index.html#partners">Partners</a></li>
+                    <li><a href="../index.html#about">About</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <header class="header">
+        <div class="container">
+            <div class="xrpl-badge">POWERED BY XRPL</div>
+            <h1 class="partner-title">Mercado Bitcoin</h1>
+            <div class="partner-meta">
+                <span class="meta-tag"><strong>Asset Class:</strong> Private Credit / Exchange</span>
+                <span class="meta-tag"><strong>Jurisdiction:</strong> Brazil</span>
+                <span class="meta-tag"><strong>Segment:</strong> Retail & Institutional</span>
+            </div>
+            <p class="partner-subtitle">Latin America's largest cryptocurrency exchange integrating RLUSD for tokenized asset distribution</p>
+        </div>
+    </header>
+    <main class="container">
+        <section class="glass-card executive-summary">
+            <h2 class="section-title">Executive Summary</h2>
+            <p>Mercado Bitcoin stands as Latin America's premier cryptocurrency exchange, serving over 5 million users across Brazil and the broader region. This partnership integrates RLUSD (Ripple's USD-backed stablecoin) and enables distribution of XRPL-based tokenized assets to the largest retail crypto audience in Latin America. With deep banking relationships, established regulatory compliance frameworks, and proven market infrastructure, Mercado Bitcoin provides the essential retail gateway for bringing RWA tokenization to the region's investors.</p>
+            <p>The investment thesis centers on capturing the massive Brazilian and Latin American retail market for tokenized real-world assets. With over $3 trillion in retail savings seeking yield alternatives and limited access to traditional private credit markets, Mercado Bitcoin's user base represents an underserved population eager for regulated yield-bearing digital assets. The integration of RLUSD provides familiar on/off ramps for Brazilian Real, while XRPL's instant settlement enables efficient trading of tokenized assets.</p>
+            <p>From an investor perspective, Mercado Bitcoin offers unparalleled distribution for tokenized asset issuers seeking retail access in Latin America. The platform's CVM compliance, Bacen (Central Bank of Brazil) authorization, and established trust with millions of users significantly de-risk market entry. For retail investors, Mercado Bitcoin provides access to previously unavailable yield opportunities through a familiar, regulated interface with full Portuguese-language support.</p>
+            <p>The strategic importance of this partnership extends beyond immediate product distribution. Brazil represents Latin America's largest economy with over 200 million consumers, growing crypto adoption rates, and increasingly clear regulatory frameworks for digital assets. By partnering with Mercado Bitcoin, XRPL gains access to the region's most trusted crypto brand, creating network effects that will compound as more issuers and investors discover the platform.</p>
+        </section>
+        <section class="glass-card">
+            <h2 class="section-title">Key Metrics & Investment Parameters</h2>
+            <div class="metrics-grid">
+                <div class="metric-item"><div class="metric-value">5M+</div><div class="metric-label">Registered Users</div></div>
+                <div class="metric-item"><div class="metric-value">$3B+</div><div class="metric-label">Monthly Volume</div></div>
+                <div class="metric-item"><div class="metric-value">BRL 100</div><div class="metric-label">Min Investment (~$20)</div></div>
+                <div class="metric-item"><div class="metric-value">60%</div><div class="metric-label">Permission Level</div></div>
+                <div class="metric-item"><div class="metric-value">CVM/Bacen</div><div class="metric-label">Regulators</div></div>
+                <div class="metric-item"><div class="metric-value">24/7</div><div class="metric-label">Trading Window</div></div>
+                <div class="metric-item"><div class="metric-value">T+0</div><div class="metric-label">Settlement</div></div>
+                <div class="metric-item"><div class="metric-value">#1</div><div class="metric-label">LATAM Exchange</div></div>
+            </div>
+            <div class="highlight-box" style="margin-top: 32px;">
+                <h4>📋 Investment Eligibility Requirements</h4>
+                <ul class="icon-list">
+                    <li>Broad retail access for qualified high-yield products</li>
+                    <li>Minimum investment: BRL 100 (approximately $20 USD equivalent)</li>
+                    <li>KYC/AML compliance required per Brazilian regulations</li>
+                    <li>Valid CPF (Brazilian tax ID) required for account verification</li>
+                    <li>Simple registration process for basic trading</li>
+                    <li>Enhanced due diligence for higher-yield products</li>
+                </ul>
+            </div>
+        </section>
+        <section class="glass-card">
+            <h2 class="section-title">Asset Deep Dive: Retail Access to Tokenized Assets</h2>
+            <div class="deep-dive-content">
+                <div class="content-block">
+                    <h3>Latin American Crypto Market</h3>
+                    <p>Brazil and Latin America represent one of the fastest-growing cryptocurrency markets globally, driven by high inflation, currency instability, and underbanked populations seeking alternative financial services. This creates massive demand for regulated yield-bearing digital assets.</p>
+                    <ul>
+                        <li><strong>Brazil Crypto Adoption:</strong> 5+ million active crypto investors, representing ~3% of population</li>
+                        <li><strong>Trading Volume:</strong> $3+ billion monthly trading volume on Mercado Bitcoin alone</li>
+                        <li><strong>Retail Demand:</strong> High yield requirements due to Brazilian interest rates (11%+ SELIC)</li>
+                        <li><strong>Banking Integration:</strong> PIX instant payments integrated, enabling seamless BRL on/off ramps</li>
+                        <li><strong>Regulatory Clarity:</strong> Clear framework from CVM and Bacen for crypto asset classification</li>
+                    </ul>
+                    <h3 style="margin-top: 32px;">RLUSD Integration</h3>
+                    <p>Mercado Bitcoin's integration of RLUSD (Ripple's USD-backed stablecoin) provides critical infrastructure for tokenized asset distribution in Latin America.</p>
+                    <ul>
+                        <li><strong>Stable On-Ramp:</strong> RLUSD provides stable, regulated bridge between BRL and tokenized assets</li>
+                        <li><strong>Banking Relationships:</strong> Mercado Bitcoin's bank partners enable RLUSD fiat conversion</li>
+                        <li><strong>Liquidity Pools:</strong> RLUSD/BRL liquidity pools on decentralized exchanges</li>
+                        <li><strong>Regulatory Compliance:</strong> RLUSD aligns with Brazilian stablecoin regulations</li>
+                    </ul>
+                </div>
+                <div class="content-block">
+                    <h3>Tokenized Asset Distribution</h3>
+                    <p>Mercado Bitcoin provides the retail gateway for XRPL-based tokenized assets, enabling distribution to millions of Latin American investors.</p>
+                    <div class="highlight-box">
+                        <h4>Primary Market Access</h4>
+                        <ul class="icon-list">
+                            <li>Direct token purchases through Mercado Bitcoin platform</li>
+                            <li>PIX instant payment integration for BRL funding</li>
+                            <li>Fractional ownership starting at BRL 100</li>
+                            <li>Automatic yield distribution to user wallets</li>
+                            <li>Tax reporting integrated into platform</li>
+                        </ul>
+                    </div>
+                    <div class="highlight-box">
+                        <h4>Secondary Trading</h4>
+                        <ul class="icon-list">
+                            <li>Order book trading for tokenized assets</li>
+                            <li>RLUSD stable pairs for efficient trading</li>
+                            <li>Real-time pricing and market data</li>
+                            <li>Instant settlement via XRPL</li>
+                        </ul>
+                    </div>
+                    <h3 style="margin-top: 24px;">Brazilian Regulatory Landscape</h3>
+                    <ul>
+                        <li><strong>CVM:</strong> Securities regulator overseeing tokenized securities offerings</li>
+                        <li><strong>Bacen:</strong> Central Bank regulating stablecoins and payment services</li>
+                        <li><strong>COAF:</strong> Anti-money laundering authority for crypto transactions</li>
+                        <li><strong>SEC/CMN:</strong> Macroprudential oversight of financial system</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+        <section class="glass-card">
+            <h2 class="section-title">Technical Architecture: XRPL + Mercado Bitcoin</h2>
+            <p style="color: var(--text-secondary); margin-bottom: 32px;">The technical integration between XRPL and Mercado Bitcoin enables seamless distribution of tokenized assets to Latin American retail investors through a regulated, compliant infrastructure.</p>
+            <div class="architecture-flow">
+                <div class="flow-step">
+                    <div class="flow-number">1</div>
+                    <div class="flow-content">
+                        <h4>Asset Origination & Tokenization</h4>
+                        <p>Real-world assets tokenized on XRPL by issuing partners. CVM-compliant documentation finalized. Custodial arrangements established. Token representation created on XRPL with full regulatory metadata.</p>
+                    </div>
+                </div>
+                <div class="flow-step">
+                    <div class="flow-number">2</div>
+                    <div class="flow-content">
+                        <h4>Listing on Mercado Bitcoin</h4>
+                        <p>Tokenized assets listed on Mercado Bitcoin platform with full product documentation. CVM-approved offering materials. Portuguese-language product descriptions. Pricing in BRL equivalent.</p>
+                    </div>
+                </div>
+                <div class="flow-step">
+                    <div class="flow-number">3</div>
+                    <div class="flow-content">
+                        <h4>Investor Onboarding</h4>
+                        <p>Users complete standard Mercado Bitcoin registration with KYC/AML. CPF verification for Brazilian investors. Simple questionnaire for product eligibility. Wallet created automatically for token holdings.</p>
+                    </div>
+                </div>
+                <div class="flow-step">
+                    <div class="flow-number">4</div>
+                    <div class="flow-content">
+                        <h4>Purchase & Settlement</h4>
+                        <p>Investors fund account via PIX, bank transfer, or RLUSD. Purchase order matched and confirmed. Tokens transferred from issuer to investor wallet on XRPL. Settlement in 4 seconds with full transparency.</p>
+                    </div>
+                </div>
+                <div class="flow-step">
+                    <div class="flow-number">5</div>
+                    <div class="flow-content">
+                        <h4>Yield Distribution</h4>
+                        <p>Yield payments distributed to investor wallets on XRPL. Automatic conversion to BRL at user preference. Transaction history available in Portuguese. Tax documents generated automatically.</p>
+                    </div>
+                </div>
+                <div class="flow-step">
+                    <div class="flow-number">6</div>
+                    <div class="flow-content">
+                        <h4>Secondary Trading</h4>
+                        <p>Investors can list positions for sale on Mercado Bitcoin order book. Price discovery through order matching. Settlement via XRPL atomic transfer. Full compliance with transfer restrictions.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="two-column" style="margin-top: 40px;">
+                <div class="content-block">
+                    <h3>Platform Advantages</h3>
+                    <ul>
+                        <li><strong>Massive Distribution:</strong> 5+ million registered users across LATAM</li>
+                        <li><strong>Regulatory Compliance:</strong> Full CVM and Bacen authorization</li>
+                        <li><strong>Banking Integration:</strong> PIX instant payments, Bradesco and other bank partnerships</li>
+                        <li><strong>Local Language:</strong> Full Portuguese-language interface and support</li>
+                        <li><strong>Trust & Reputation:</strong> 10+ years operating in Brazilian market</li>
+                        <li><strong>Insurance Coverage:</strong> User assets protected through regulated custodian</li>
+                    </ul>
+                </div>
+                <div class="content-block">
+                    <h3>Security & Compliance</h3>
+                    <ul>
+                        <li><strong>CVM Authorization:</strong> Licensed to operate virtual asset services</li>
+                        <li><strong>Bacen Compliance:</strong> Central Bank regulatory compliance</li>
+                        <li><strong>Custodial Services:</strong> Regulated custodian for user assets</li>
+                        <li><strong>AML/CTF:</strong> Full anti-money laundering compliance program</li>
+                        <li><strong>Insurance:</strong> Cold storage insurance coverage</li>
+                        <li><strong>Tax Reporting:</strong> Automatic IRPF/CPMF reporting integration</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+        <section class="glass-card">
+            <h2 class="section-title">Risk Factors & Mitigation Strategies</h2>
+            <div class="risk-matrix">
+                <div class="risk-item high">
+                    <div class="risk-title">Currency & FX Risk</div>
+                    <div class="risk-description"><strong>Risk:</strong> BRL volatility against USD could significantly impact returns for investors and complicate yield calculations.<br><br><strong>Mitigation:</strong> RLUSD provides stablecoin hedging option. Clear disclosure of FX impact on returns. Optional USD-denominated products.</div>
+                </div>
+                <div class="risk-item medium">
+                    <div class="risk-title">Regulatory Risk</div>
+                    <div class="risk-description"><strong>Risk:</strong> Changes in Brazilian crypto regulations could impact token listings, trading, or investor access.<br><br><strong>Mitigation:</strong> Active regulatory engagement. Flexible architecture. Jurisdictional options for issuers.</div>
+                </div>
+                <div class="risk-item medium">
+                    <div class="risk-title">Counterparty Risk</div>
+                    <div class="risk-description"><strong>Risk:</strong> Default by tokenized asset issuer could impact retail investor returns.<br><br><strong>Mitigation:</strong> Due diligence on all issuers. Credit enhancement structures where applicable. Diversification across multiple issuers.</div>
+                </div>
+                <div class="risk-item medium">
+                    <div class="risk-title">Market Risk</div>
+                    <div class="risk-description"><strong>Risk:</strong> Tokenized asset values may decline due to underlying asset performance or market conditions.<br><br><strong>Mitigation:</strong> Clear risk disclosures. Investor education. Appropriate product suitability checks.</div>
+                </div>
+                <div class="risk-item low">
+                    <div class="risk-title">Operational Risk</div>
+                    <div class="risk-description"><strong>Risk:</strong> Platform technical issues could disrupt trading or access to funds.<br><br><strong>Mitigation:</strong> Enterprise-grade infrastructure. Multiple redundancy systems. 24/7 support availability.</div>
+                </div>
+                <div class="risk-item low">
+                    <div class="risk-title">Custody Risk</div>
+                    <div class="risk-description"><strong>Risk:</strong> Asset loss due to custodian breach or technical failure.<br><br><strong>Mitigation:</strong> Licensed custodians with insurance coverage. Cold storage for majority of assets. Regular audits.</div>
+                </div>
+            </div>
+        </section>
+        <section class="glass-card">
+            <h2 class="section-title">Regulatory Framework: Brazil</h2>
+            <div class="regulatory-grid">
+                <div class="regulatory-card">
+                    <h4>CVM & Bacen Framework</h4>
+                    <ul>
+                        <li><span>CVM</span><span>Securities Regulator</span></li>
+                        <li><span>Bacen</span><span>Central Bank</span></li>
+                        <li><span>COAF</span><span>AML Authority</span></li>
+                        <li><span>License Type</span><span>Virtual Asset Provider</span></li>
+                        <li><span> investor Category</span><span>Qualified/Retail</span></li>
+                    </ul>
+                </div>
+                <div class="regulatory-card">
+                    <h4>Compliance Requirements</h4>
+                    <ul>
+                        <li><span>KYC/AML</span><span>Required</span></li>
+                        <li><span>CPF Verification</span><span>Required</span></li>
+                        <li><span>Tax Reporting</span><span>Automatic</span></li>
+                        <li><span>Auditing</span><span>Annual</span></li>
+                        <li><span>Capital Requirements</span><span>Regulated</span></li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+        <section class="glass-card">
+            <h2 class="section-title">Market Opportunity: TAM/SAM</h2>
+            <div class="deep-dive-content">
+                <div class="content-block">
+                    <h3>Total Addressable Market (TAM)</h3>
+                    <p>Latin America's crypto market represents massive untapped opportunity for tokenized real-world assets.</p>
+                    <ul>
+                        <li><strong>Crypto Users:</strong> 40+ million in Latin America, growing 30%+ annually</li>
+                        <li><strong>Trading Volume:</strong> $100+ billion annual crypto trading volume in Brazil</li>
+                        <li><strong>Retail Savings:</strong> $3+ trillion in Brazilian retail savings seeking yield</li>
+                        <li><strong>Unbanked Population:</strong> 35+ million underbanked Brazilians using crypto</li>
+                    </ul>
+                </div>
+                <div class="content-block">
+                    <h3>Serviceable Addressable Market (SAM)</h3>
+                    <p>Mercado Bitcoin's platform provides access to the region's most engaged crypto investors.</p>
+                    <ul>
+                        <li><strong>Active Users:</strong> 5+ million registered on Mercado Bitcoin</li>
+                        <li><strong>Trading Users:</strong> 1+ million monthly active traders</li>
+                        <li><strong>Yield-Seeking:</strong> High proportion interested in yield-bearing assets</li>
+                        <li><strong>Retail AUM:</strong> $3+ billion in user assets on platform</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+    </main>
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <p>© 2026 XRPL RWA Platform. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>
