@@ -1,7 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { partners } from '@/data/partners'
-import styles from './factsheets.module.css'
 
 export const metadata: Metadata = {
   title: 'Fact Sheets | XRPL RWA Platform',
@@ -10,69 +9,66 @@ export const metadata: Metadata = {
 
 export default function FactSheetsPage() {
   return (
-    <main style={{ maxWidth: 1200, margin: '0 auto', padding: '2rem' }}>
-      <div className="page-header">
-        <h1 className="page-title">Partner Fact Sheets</h1>
-        <p className="page-subtitle">
-          Concise one-page investment summaries for each XRPL RWA partner platform.
-          Key facts, investment highlights, risk profiles, and XRPL integration details at a glance.
+    <div className="space-y-8 sm:space-y-10">
+      <header className="pb-4 sm:pb-6 border-b border-slate-200/80">
+        <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight mb-1">Partner Fact Sheets</h1>
+        <p className="text-slate-500 text-sm max-w-2xl">
+          One-page investment summaries: key facts, highlights, risk profile, and XRPL integration for each partner.
         </p>
-      </div>
+      </header>
 
-      <div className="stats-grid" style={{ marginBottom: '3rem' }}>
-        <div className="stat-item">
-          <div className="stat-value">13</div>
-          <div className="stat-label">Fact Sheets</div>
+      <section>
+        <h2 className="section-label mb-4">Summary</h2>
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+          {[
+            { value: '13', label: 'Fact sheets', desc: 'One-pagers' },
+            { value: '9', label: 'Jurisdictions', desc: 'Regions' },
+            { value: '$2.5B+', label: 'Assets profiled', desc: 'Combined' },
+          ].map((s) => (
+            <div key={s.label} className="metric-card">
+              <div className="metric-card-label">{s.label}</div>
+              <div className="metric-card-value">{s.value}</div>
+              <div className="metric-card-desc">{s.desc}</div>
+            </div>
+          ))}
         </div>
-        <div className="stat-item">
-          <div className="stat-value">8+</div>
-          <div className="stat-label">Jurisdictions Covered</div>
-        </div>
-        <div className="stat-item">
-          <div className="stat-value">$2.5B+</div>
-          <div className="stat-label">Total Assets Profiled</div>
-        </div>
-      </div>
+      </section>
 
-      <div className={styles.factSheetGrid}>
+      <section>
+        <h2 className="section-label mb-4">All fact sheets</h2>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
         {partners.map((p) => {
           const isTangible = p.assetType === 'Tangible Asset'
+          const initials = p.partner.includes('/') ? p.partner.split('/').map((n) => n.trim()[0]).join('') : p.partner.slice(0, 2).toUpperCase()
           return (
-            <Link key={p.slug} href={`/fact-sheets/${p.slug}`} className={styles.factSheetCard}>
-              <div className={styles.cardTop}>
-                <div className={styles.cardIcon}>
-                  {p.partner.includes('/') ? p.partner.split('/').map(n => n.trim()[0]).join('') : p.partner.slice(0, 2).toUpperCase()}
+            <Link
+              key={p.slug}
+              href={`/fact-sheets/${p.slug}`}
+              className="block card p-5 card-hover transition-all duration-200 min-h-[44px] active:opacity-90"
+            >
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-12 h-12 rounded-lg bg-ripple-blue/10 border border-ripple-blue/30 flex items-center justify-center text-ripple-blue font-bold text-sm">
+                  {initials}
                 </div>
                 <div>
-                  <h3 className={styles.cardName}>{p.partner}</h3>
-                  <div className={styles.cardBadges}>
-                    <span className={`badge ${isTangible ? 'badge-green' : 'badge-blue'}`} style={{ fontSize: '0.65rem', padding: '0.2rem 0.5rem' }}>
-                      {p.subType}
-                    </span>
-                    <span className="badge badge-purple" style={{ fontSize: '0.65rem', padding: '0.2rem 0.5rem' }}>
-                      {p.jurisdiction}
-                    </span>
+                  <h3 className="font-semibold text-slate-900">{p.partner}</h3>
+                  <div className="flex gap-2 mt-1">
+                    <span className={`text-xs font-medium px-2 py-0.5 rounded ${isTangible ? 'bg-emerald-100 text-emerald-700' : 'bg-ripple-blue/10 text-ripple-blue'}`}>{p.subType}</span>
+                    <span className="text-xs font-medium text-slate-500">{p.jurisdiction}</span>
                   </div>
                 </div>
               </div>
-              <p className={styles.cardOverview}>{p.factSheet.overview}</p>
-              <div className={styles.cardQuickFacts}>
-                <div className={styles.quickFact}>
-                  <span className={styles.quickLabel}>Min. Investment</span>
-                  <span className={styles.quickValue}>{p.minInvestment}</span>
-                </div>
-                <div className={styles.quickFact}>
-                  <span className={styles.quickLabel}>Permissioning</span>
-                  <span className={styles.quickValue}>{p.permissioned}</span>
-                </div>
+              <p className="text-sm text-slate-600 line-clamp-2 mb-4">{p.factSheet.overview}</p>
+              <div className="grid grid-cols-2 gap-2 p-3 bg-slate-50 rounded-xl mb-3">
+                <div><div className="text-xs text-slate-500">Min. investment</div><div className="text-sm font-medium text-slate-900">{p.minInvestment}</div></div>
+                <div><div className="text-xs text-slate-500">Permissioning</div><div className="text-sm font-medium text-slate-900">{p.permissioned}</div></div>
               </div>
-              <div className={styles.cardFooter}>
-                <span className={styles.viewLink}>View Full Fact Sheet →</span>
-              </div>
+              <span className="text-sm font-medium text-ripple-blue">View fact sheet →</span>
             </Link>
           )
         })}
       </div>
-    </main>
+      </section>
+    </div>
   )
 }

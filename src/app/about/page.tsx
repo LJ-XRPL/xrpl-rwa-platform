@@ -7,27 +7,44 @@ export const metadata: Metadata = {
 
 export default function AboutPage() {
   return (
-    <main style={{ maxWidth: 1200, margin: '0 auto', padding: '2rem' }}>
-      <div className="page-header">
-        <h1 className="page-title">About XRPL Tokenization</h1>
-        <p className="page-subtitle">Understanding the XRP Ledger&apos;s infrastructure for real-world asset tokenization</p>
-      </div>
+    <div className="space-y-8 sm:space-y-12">
+      <header className="pb-6 sm:pb-8 border-b border-slate-200">
+        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+          <div className="min-w-0">
+            <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">About XRPL Tokenization</h1>
+            <a href="https://xrpl.org" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-sm text-ripple-blue hover:underline mt-1 min-h-[44px] items-center">
+              <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              Learn more
+            </a>
+          </div>
+        </div>
+        <p className="text-slate-600 text-sm mt-3 max-w-2xl">Understanding the XRP Ledger&apos;s infrastructure for real-world asset tokenization.</p>
+      </header>
 
-      <section className="section">
-        <div className="glass-card">
-          <h2 className="card-title">What is the XRP Ledger?</h2>
-          <p>
+      <section>
+        <h2 className="section-label mb-4">What is the XRP Ledger?</h2>
+        <div className="card p-4 sm:p-6 lg:p-8">
+          <p className="text-slate-600 mb-6">
             The XRP Ledger (XRPL) is a decentralized, permissionless blockchain that has been operating reliably since
             2012. It is designed specifically for payments and has processed over $30 billion in transactions without any
             major security incidents.
           </p>
-          <div className="stats-grid">
-            <div className="stat-item"><div className="stat-value">10+</div><div className="stat-label">Years in Production</div></div>
-            <div className="stat-item"><div className="stat-value">4s</div><div className="stat-label">Settlement Time</div></div>
-            <div className="stat-item"><div className="stat-value">$0.0002</div><div className="stat-label">Avg. Transaction Cost</div></div>
-            <div className="stat-item"><div className="stat-value">1,500+</div><div className="stat-label">TPS Capacity</div></div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+            {[
+              { value: '10+', label: 'Years in Production' },
+              { value: '4s', label: 'Settlement Time' },
+              { value: '$0.0002', label: 'Avg. Transaction Cost' },
+              { value: '1,500+', label: 'TPS Capacity' },
+            ].map((s) => (
+              <div key={s.label} className="bg-slate-50 rounded-xl p-4 text-center">
+                <div className="text-xl font-bold text-ripple-blue">{s.value}</div>
+                <div className="text-sm text-slate-500">{s.label}</div>
+              </div>
+            ))}
           </div>
-          <p>
+          <p className="text-slate-600">
             Unlike general-purpose blockchains, XRPL was built from the ground up for financial infrastructure. Its
             unique consensus mechanism achieves finality in 4-5 seconds while maintaining decentralization and low
             energy consumption—making it exceptionally suited for institutional RWA applications.
@@ -35,129 +52,81 @@ export default function AboutPage() {
         </div>
       </section>
 
-      <section className="section">
-        <h2 className="section-title">Why XRPL for Real-World Assets?</h2>
-        <div className="feature-grid">
+      <section>
+        <h2 className="section-label mb-4">Why XRPL for Real-World Assets?</h2>
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
           {[
-            { icon: '📊', title: 'Native Decentralized Exchange', desc: 'XRPL includes a built-in order-book DEX enabling instant asset exchange without bridging to external DEXs.' },
-            { icon: '🔗', title: 'TrustLines', desc: 'Native asset tracking system where users explicitly trust issuers with transparent, on-chain visibility.' },
-            { icon: '⚖️', title: 'Compliance Hooks', desc: 'Protocol-level features like Authorized TrustLines, Clawback, and Freeze for regulatory compliance.' },
-            { icon: '⚡', title: 'Low Fees & High Efficiency', desc: 'Transaction costs average $0.0002 USD equivalent with minimal energy consumption.' },
-            { icon: '🌉', title: 'Cross-Chain Bridges', desc: 'The XRP Ledger bridges to Ethereum, Bitcoin, and other chains via protocols like ILP.' },
-            { icon: '💱', title: 'Automated Market Maker', desc: 'Integrated AMM enables automated liquidity provision for RWA tokens.' },
+            { icon: '📊', title: 'Native DEX', desc: 'Built-in order-book DEX enabling instant asset exchange without bridging.' },
+            { icon: '🔗', title: 'TrustLines', desc: 'Native asset tracking with transparent, on-chain visibility.' },
+            { icon: '⚖️', title: 'Compliance Hooks', desc: 'Authorized TrustLines, Clawback, and Freeze for regulation.' },
+            { icon: '⚡', title: 'Low Fees', desc: 'Transaction costs average $0.0002 USD equivalent.' },
+            { icon: '🌉', title: 'Cross-Chain Bridges', desc: 'Bridges to Ethereum, Bitcoin, and other chains via ILP.' },
+            { icon: '💱', title: 'AMM', desc: 'Integrated AMM for automated liquidity provision.' },
           ].map((f) => (
-            <div key={f.title} className="feature-card">
-              <div className="feature-icon">{f.icon}</div>
-              <h3 className="feature-title">{f.title}</h3>
-              <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>{f.desc}</p>
+            <div key={f.title} className="card p-5 card-hover transition-shadow">
+              <div className="text-2xl mb-2">{f.icon}</div>
+              <h3 className="font-semibold text-slate-900 mb-1">{f.title}</h3>
+              <p className="text-sm text-slate-600">{f.desc}</p>
             </div>
           ))}
         </div>
       </section>
 
-      <section className="section">
-        <div className="glass-card">
-          <h2 className="card-title">Ripple&apos;s Role in the Ecosystem</h2>
-          <p>Ripple Labs Inc. is a technology company that has been instrumental in developing the XRP Ledger. While XRPL is decentralized, Ripple provides key infrastructure:</p>
-          <ul>
-            <li><strong>RippleNet</strong> — Enterprise blockchain solutions for cross-border payments used by 300+ institutions</li>
-            <li><strong>RLUSD</strong> — Regulated stablecoin backed 1:1 by USD deposits</li>
-            <li><strong>Ripple Custody</strong> — Institutional-grade digital asset custody solution</li>
+      <section className="grid lg:grid-cols-2 gap-6">
+        <div className="card p-6">
+          <h2 className="text-lg font-semibold text-slate-900 mb-4">Ripple&apos;s Role</h2>
+          <p className="text-slate-600 mb-4">Ripple Labs Inc. has been instrumental in developing the XRP Ledger. Ripple provides:</p>
+          <ul className="list-disc list-inside space-y-2 text-slate-600">
+            <li><strong className="text-slate-800">RippleNet</strong> — Cross-border payments used by 300+ institutions</li>
+            <li><strong className="text-slate-800">RLUSD</strong> — Regulated stablecoin backed 1:1 by USD</li>
+            <li><strong className="text-slate-800">Ripple Custody</strong> — Institutional-grade digital asset custody</li>
           </ul>
+        </div>
+        <div className="card p-6">
+          <h2 className="text-lg font-semibold text-slate-900 mb-4">RLUSD &amp; Ripple Custody</h2>
+          <p className="text-slate-600">RLUSD is Ripple&apos;s regulated stablecoin: full reserve backing, NY DFS guidance, native XRPL. Ripple Custody offers multi-sig security, SOC 1/2 Type 2, and compliance features.</p>
         </div>
       </section>
 
-      <section className="section">
-        <div className="glass-card">
-          <h2 className="card-title"><span className="badge badge-blue">Stablecoin</span> RLUSD Integration</h2>
-          <p>RLUSD is Ripple&apos;s regulated stablecoin, issued by Ripple and designed to meet institutional standards.</p>
-          <ul>
-            <li><strong>Full Reserve Backing</strong> — 1:1 backed by USD deposits at FDIC-insured banks</li>
-            <li><strong>Regulatory Compliance</strong> — Issued in accordance with NY DFS guidance</li>
-            <li><strong>Native XRPL Integration</strong> — Built directly on XRPL with immediate settlement</li>
-          </ul>
-        </div>
-      </section>
-
-      <section className="section">
-        <div className="glass-card">
-          <h2 className="card-title"><span className="badge badge-cyan">Custody</span> Ripple Custody Overview</h2>
-          <p>Ripple Custody provides institutional-grade digital asset storage with security and compliance controls.</p>
-          <ul>
-            <li><strong>Multi-Sig Security</strong> — MPC-based key management with HSM backup</li>
-            <li><strong>Regulatory Alignment</strong> — SOC 1 Type 2 and SOC 2 Type 2 certified</li>
-            <li><strong>Compliance Features</strong> — Transaction limits, geo-restrictions, whitelisting</li>
-          </ul>
-        </div>
-      </section>
-
-      <section className="section">
-        <h2 className="section-title">Key XRPL Features for Tokenization</h2>
-        <div className="feature-grid">
+      <section>
+        <h2 className="section-label mb-4">Regulatory landscape</h2>
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
           {[
-            { icon: '✓', title: 'Authorized TrustLines', desc: 'Issuers must explicitly authorize each holder. Essential for KYC/AML compliance.' },
-            { icon: '↩️', title: 'Clawback', desc: 'Issuers can recover tokens from holders in cases of regulatory requirement.' },
-            { icon: '🔒', title: 'Freeze', desc: 'Ability to freeze accounts or entire tokenized assets for compliance.' },
-            { icon: '🧩', title: 'AMM', desc: 'On-chain liquidity pools for automated trading.' },
-            { icon: '🌐', title: 'Cross-Chain Bridges', desc: 'XLS-38d bridge standard enables secure asset transfer.' },
-            { icon: '📋', title: 'Hooks', desc: 'Smart contracts on XRPL for programmable RWA logic.' },
-          ].map((f) => (
-            <div key={f.title} className="feature-card">
-              <div className="feature-icon">{f.icon}</div>
-              <h3 className="feature-title">{f.title}</h3>
-              <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>{f.desc}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      <section className="section">
-        <h2 className="section-title">Regulatory Landscape by Jurisdiction</h2>
-        <div className="feature-grid">
-          {[
-            { flag: '🇺🇸', region: 'United States', desc: 'SEC classification applies. Regulation S and D provide exemptions.', badge: 'Securities Focus', badgeClass: 'badge-blue' },
-            { flag: '🇪🇺', region: 'European Union', desc: 'MiCA provides clear framework, in force since December 2024.', badge: 'MiCA Compliant', badgeClass: 'badge-green' },
-            { flag: '🇸🇬', region: 'Singapore', desc: 'MAS regulatory sandbox and payment services framework.', badge: 'Pro-Innovation', badgeClass: 'badge-green' },
-            { flag: '🇬🇧', region: 'United Kingdom', desc: 'FCA registration for crypto businesses.', badge: 'Evolving', badgeClass: 'badge-blue' },
-            { flag: '🇦🇪', region: 'UAE (Dubai/VAD)', desc: 'VARA provides dedicated framework for virtual assets.', badge: 'Pro-Innovation', badgeClass: 'badge-green' },
-            { flag: '🇯🇵', region: 'Japan', desc: 'PSA regulates crypto exchanges, FSA approval required.', badge: 'Structured', badgeClass: 'badge-blue' },
+            { region: 'United States', desc: 'SEC classification; Reg S and D exemptions.', badge: 'Securities focus' },
+            { region: 'European Union', desc: 'MiCA framework in force.', badge: 'MiCA' },
+            { region: 'Singapore', desc: 'MAS sandbox and payment services framework.', badge: 'Pro-innovation' },
+            { region: 'United Kingdom', desc: 'FCA registration for crypto businesses.', badge: 'Evolving' },
+            { region: 'UAE (Abu Dhabi & Dubai)', desc: 'ADGM (Abu Dhabi), VARA/Dubai for virtual assets.', badge: 'Pro-innovation' },
+            { region: 'Japan', desc: 'PSA regulates exchanges; FSA approval.', badge: 'Structured' },
           ].map((r) => (
-            <div key={r.region} className="feature-card" style={{ padding: '1.5rem' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
-                <span style={{ fontSize: '1.25rem' }}>{r.flag}</span>
-                <strong style={{ color: 'var(--ripple-cyan)' }}>{r.region}</strong>
-              </div>
-              <p style={{ fontSize: '0.9rem', marginBottom: '0.5rem' }}>{r.desc}</p>
-              <span className={`badge ${r.badgeClass}`}>{r.badge}</span>
+            <div key={r.region} className="card p-4">
+              <div className="font-medium text-slate-900 mb-1">{r.region}</div>
+              <p className="text-sm text-slate-600 mb-2">{r.desc}</p>
+              <span className="text-xs font-medium text-ripple-blue bg-ripple-blue/10 px-2 py-0.5 rounded-lg">{r.badge}</span>
             </div>
           ))}
         </div>
       </section>
 
-      <section className="section">
-        <h2 className="section-title">XRPL RWA Milestones</h2>
-        <div className="glass-card">
-          <div style={{ position: 'relative', paddingLeft: '2rem', margin: '2rem 0' }}>
-            <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 2, background: 'linear-gradient(to bottom, var(--ripple-blue), var(--ripple-cyan))' }} />
+      <section>
+        <h2 className="section-label mb-4">XRPL RWA milestones</h2>
+        <div className="card p-6">
+          <ul className="space-y-4">
             {[
-              { year: '2012', title: 'XRP Ledger Launches', desc: 'XRPL begins operations with novel consensus protocol' },
-              { year: '2017', title: 'TrustLines Feature Added', desc: 'Native compliance framework enables regulated token issuance' },
-              { year: '2020', title: 'Flare Networks Launch', desc: 'First major RWA tokenization experiments on XRPL' },
-              { year: '2023', title: 'AMM & Clawback Features', desc: 'Protocol upgrades enhance DeFi and compliance capabilities' },
-              { year: '2024', title: 'RLUSD Stablecoin Announced', desc: 'Ripple announces regulated stablecoin for institutional RWA ecosystem' },
-              { year: '2024', title: 'Hooks Smart Contracts', desc: 'Smart contract capability added to XRPL' },
-              { year: '2025', title: 'Institutional RWA Growth', desc: 'Major institutions launch tokenized asset platforms on XRPL' },
-            ].map((item, i) => (
-              <div key={i} style={{ position: 'relative', paddingBottom: '2rem', paddingLeft: '1.5rem' }}>
-                <div style={{ position: 'absolute', left: '-2rem', top: '0.25rem', width: 12, height: 12, background: 'var(--ripple-cyan)', borderRadius: '50%', transform: 'translateX(-5px)' }} />
-                <div style={{ fontSize: '0.85rem', color: 'var(--ripple-cyan)', fontWeight: 600, marginBottom: '0.25rem' }}>{item.year}</div>
-                <div style={{ fontWeight: 600, marginBottom: '0.25rem', color: 'var(--text-primary)' }}>{item.title}</div>
-                <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>{item.desc}</p>
-              </div>
+              { year: '2012', title: 'XRP Ledger launches' },
+              { year: '2017', title: 'TrustLines feature' },
+              { year: '2023', title: 'AMM & Clawback' },
+              { year: '2024', title: 'RLUSD announced; Hooks; Archax abrdn fund on XRPL' },
+              { year: '2025', title: 'Institutional RWA growth' },
+            ].map((m) => (
+              <li key={m.year} className="flex gap-4 items-baseline">
+                <span className="text-sm font-semibold text-ripple-blue w-12 shrink-0">{m.year}</span>
+                <span className="text-slate-700">{m.title}</span>
+              </li>
             ))}
-          </div>
+          </ul>
         </div>
       </section>
-    </main>
+    </div>
   )
 }
